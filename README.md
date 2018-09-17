@@ -29,3 +29,8 @@ cat >> ~/.bashrc <<EOL
 export LD_LIBRARY_PATH=$CMSSW_BASE/src/nano/analysis/test/hh/Delphes-3.4.1:\$LD_LIBRARY_PATH
 EOL
 ```
+
+## For doublehiggs analyser
+'''
+please read delphys/analysis/test/hh/recipe_for_doublehiggs.sh to set external environments
+'''
