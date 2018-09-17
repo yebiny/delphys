@@ -1,6 +1,6 @@
 # delphys
 
-## how to git clone
+## How to git clone
 ```
 scram p -n delPhys CMSSW CMSSW_9_4_4
 cd delPhys/src
@@ -9,7 +9,7 @@ git clone git@github.com:"your_user_name"/nano.git #"your_user_name" should be r
 scram b -j 20
 getFiles
 ```
-## download and untar delphes
+## Download and untar delphes
 ```
 cmsenv #in the delPhys directory
 cd $CMSSW_BASE/src/nano/analysis/test/
@@ -22,7 +22,7 @@ sed -i s:c++0x:c++17: Makefile
 make -j 4
 export LD_LIBRARY_PATH=$CMSSW_BASE/src/nano/analysis/test/hh/Delphes-3.4.1:$LD_LIBRARY_PATH
 ```
-## add delphes library path into the .bashrc (or .bash_profile)
+## Add delphes library path into the .bashrc (or .bash_profile)
 ```
 cat >> ~/.bashrc <<EOL
 #Delphes Library Path
