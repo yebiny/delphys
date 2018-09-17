@@ -1,4 +1,4 @@
-<!--Please make sure that CXXFLAGS and LDFLAGS have right include and link path before using doubleHiggsAnalyser. Recipe for setting all needed environment is in https://github.com/YooSunYoung/nano/-->
+<!--Please make sure that CXXFLAGS and LDFLAGS have right include and link path before using doubleHiggsAnalyser. Recipe for setting all needed environments is in /analysis/test/hh/recipe_for_doublehiggs.sh -->
 <!-- erase this line after setting environment
 <bin name="doubleHiggsAnalyser" file="doubleHiggsAnalyser.cc">
   <use name="root"/>
