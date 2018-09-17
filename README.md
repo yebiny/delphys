@@ -31,6 +31,6 @@ EOL
 ```
 
 ## For doublehiggs analyser
-'''
+```
 please read delphys/analysis/test/hh/recipe_for_doublehiggs.sh to set external environments
-'''
+```
