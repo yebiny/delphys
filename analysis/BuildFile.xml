@@ -1,0 +1,9 @@
+<use name="delphys/external" />
+<use name="root"/>
+<use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+<flags CXXFLAGS="-g" />
+<export>
+  <lib name="1"/>
+</export>
