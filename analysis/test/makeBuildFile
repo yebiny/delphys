@@ -1,0 +1,111 @@
+#!/bin/env python
+
+# TODO use 'createBuildFile.pl'
+# refer https://twiki.cern.ch/twiki/bin/viewauth/CMS/BuildFileCreator 
+
+import os
+import sys
+import shutil
+
+import argparse
+
+# NOTE
+_ANALYSIS_BUILD_FILE = '''<use name="delphys/external" />
+<use name="root"/>
+<use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+<flags CXXFLAGS="-g" />
+
+<export>
+  <lib name="1"/>
+</export>
+
+<flags CXXFLAGS="-I{delphes_dir}"/>
+<flags CXXFLAGS="-L{delphes_dir}"/>
+<flags CXXFLAGS="-lDelphes"/>'''
+
+
+# NOTE
+_BIN_TAG = '''<bin name="{name}" file="{file_}">
+  <use name="root"/>
+  <use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+  <use name="delphys/analysis"/>
+  <use name="delphys/external"/>
+  <flags CXXFLAGS="-I{delphes_dir}"/>
+  <flags CXXFLAGS="-L{delphes_dir}"/>
+  <flags CXXFLAGS="-lDelphes"/>
+</bin>
+
+'''
+
+_CXX_EXT_LIST = [".cc", ".cxx", ".C", ".cpp"]
+
+
+def backup(path):
+    root, ext = os.path.splitext(path)
+
+    # FIXME
+    backup_path = root + ".backup"
+    shutil.move(path, backup_path)
+
+    if os.path.exists(backup_path):
+        print("{0} --> {1}".format(path, backup_path))
+    else:
+        raise OSError
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--delphes", type=str, required=True)
+    parser.add_argument("-b", "--backup", action="store_true")
+    args = parser.parse_args()
+
+    delphes_dir = os.path.abspath(args.delphes)
+
+    # FIXME make it flexible
+    # NOTE assumne you are in delphys/analysis/test
+    delphys_dir = os.path.abspath("../..")
+    if os.path.basename(delphys_dir) != "delphys":
+        raise OSError("please run this script in delphys/analysis/test")
+    
+    analysis_dir = os.path.join(delphys_dir, "analysis")
+    bin_dir = os.path.join(analysis_dir, "bin")
+    # external_dir = os.path.join(delphys_dir, "external")
+    
+    # NOTE delphys/analysis/BuildFile.xml
+    analysis_build_file = os.path.join(analysis_dir, "BuildFile.xml")
+    if os.path.exists(analysis_build_file) and args.backup:
+        backup(analysis_build_file)
+
+    with open(analysis_build_file, "w") as build_file:
+        content = _ANALYSIS_BUILD_FILE.format(
+            delphes_dir=delphes_dir)
+        build_file.write(content)
+
+
+    # NOTE delphys/analysis/bin/BuildFile.xml
+
+    # make a list of .cc files in bin
+    exe_list = []
+    for file_ in os.listdir(bin_dir):
+        name, extension = os.path.splitext(file_)
+        if extension in _CXX_EXT_LIST:
+            exe_list.append((file_, name))
+
+    # write a BuildFile
+    bin_build_file = os.path.join(bin_dir, "BuildFile.xml")
+    if os.path.exists(bin_build_file) and args.backup:
+        backup(bin_build_file)
+
+    with open(bin_build_file, "w") as build_file:
+        content = ""
+        for file_, name in exe_list:
+            content += _BIN_TAG.format(name=name, file_=file_,
+                                       delphes_dir=delphes_dir)
+        build_file.write(content)
+
+if __name__ == "__main__":
+    main()
