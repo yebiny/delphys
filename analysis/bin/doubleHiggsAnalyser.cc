@@ -106,18 +106,21 @@ bool doubleHiggsAnalyser::Analysis() {
     if (m->MET<20) return false;
     missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
  
-    bool jetflag = false;
     for (int ij = 0; ij < jets->GetEntries(); ij++){
       auto jet = static_cast<const Jet *>(jets->At(ij));
-      if (abs(jet->Flavor) != 5) continue;
-      else {jetflag = true; break;}
+      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID) continue;
+      bottoms.insert(make_pair(jet->PT,ij));
     }
-    if (!jetflag) return false;
-    
+   
+    if (bottoms.size()<2) {
+      return false;
+    }
+
+    bottom_iter = bottoms.begin();
     
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)!=13 || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID || abs(p->PID)!=doubleHiggsAnalyser::Electron_PID || abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
       muons.insert(make_pair(p->PT,ip));
     }
   
@@ -125,21 +128,22 @@ bool doubleHiggsAnalyser::Analysis() {
       return false;
     }
     
-    map<Float_t,int,greater<Float_t>>::iterator iter = muons.begin();
-    auto mu1 = static_cast<const GenParticle *>(particles->At(iter->second));
-    int from1 = isFrom(particles, iter->second);
+    muon_iter = muons.begin();
+    
+    auto mu1 = static_cast<const GenParticle *>(particles->At(muon_iter->second));
+    int from1 = isFrom(particles, muon_iter->second);
     from1 = abs(from1);
-    if (from1==25) fromHiggs++;
-    if (from1==6) fromTop++;
-    if (from1==32) fromZ++;
+    if (from1==doubleHiggsAnalyser::Higgs_PID) fromHiggs++;
+    if (from1==doubleHiggsAnalyser::Top_PID) fromTop++;
+    if (from1==doubleHiggsAnalyser::Z_PID) fromZ++;
     muon1.SetPtEtaPhiM(mu1->PT,mu1->Eta,mu1->Phi,mu1->Mass);
-    ++iter;
-    auto mu2 = static_cast<const GenParticle *>(particles->At(iter->second));
-    int from2 = isFrom(particles, iter->second);
+    ++muon_iter;
+    auto mu2 = static_cast<const GenParticle *>(particles->At(muon_iter->second));
+    int from2 = isFrom(particles, muon_iter->second);
     from2 = abs(from2);
-    if (from2==25) fromHiggs++;
-    if (from2==6) fromTop++;
-    if (from2==32) fromZ++;
+    if (from2==doubleHiggsAnalyser::Higgs_PID) fromHiggs++;
+    if (from2==doubleHiggsAnalyser::Top_PID) fromTop++;
+    if (from2==doubleHiggsAnalyser::Z_PID) fromZ++;
     muon2.SetPtEtaPhiM(mu2->PT,mu2->Eta,mu2->Phi,mu2->Mass);
     
     lepton1_pt = mu1->PT;
@@ -149,7 +153,7 @@ bool doubleHiggsAnalyser::Analysis() {
     if (muons.M() > 65 || muon1.DeltaR(muon2) > 1) {
         return false;
     }
-    mt = muons.M()*muons.M() + muons.Px()*muons.Px() + muons.Py()*muons.Py();
+    mt = muons.Mt();
 
     // get MT2
     Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
