@@ -1,0 +1,15 @@
+<!--Please make sure that CXXFLAGS and LDFLAGS have right include and link path before using doubleHiggsAnalyser. Recipe for setting all needed environments is in /analysis/test/hh/recipe_for_doublehiggs.sh -->
+<!-- erase this line after setting environment
+<bin name="doubleHiggsAnalyser" file="doubleHiggsAnalyser.cc">
+  <use name="root"/>
+  <lib name="TMVA"/>
+  <use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+  <use name="delphys/analysis"/>
+  <use name="delphys/oxbridgekinetics"/>
+  <flags CXXFLAGS="-I/home/sunyoung/nanoAOD/src/delphys/external/interface/Delphes-3.4.1/"/>
+  <flags LDFLAGS="-L/home/sunyoung/nanoAOD/src/delphys/external/interface/Delphes-3.4.1/"/>
+  <flags LDFLAGS="-lDelphes"/>
+</bin>
+erase this line after setting environment -->
