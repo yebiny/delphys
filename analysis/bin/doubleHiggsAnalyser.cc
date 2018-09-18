@@ -67,15 +67,6 @@ void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
 }
 
 void doubleHiggsAnalyser::SetBranchAddress() {
-  if (delphes_flag) doubleHiggsAnalyser::SetDelphesBranchAddress();
-  else doubleHiggsAnalyser::SetNanoBranchAddress();
-}
-
-void doubleHiggsAnalyser::SetNanoBranchAddress() {
-
-}
-
-void doubleHiggsAnalyser::SetDelphesBranchAddress() {
   del_tree->SetBranchAddress("Particle",&particles);
   del_tree->SetBranchAddress("MissingET",&missings);
   del_tree->SetBranchAddress("Jet",&jets);
@@ -91,9 +82,6 @@ void doubleHiggsAnalyser::Initiate(TString output_file_name) {
 }
 
 void doubleHiggsAnalyser::ResetVariables() {
-  if (delphes_flag) ResetDelphesVariables();
-  else ResetNanoVariables();
-
   lester_MT2 = -99;
   basic_MT2_332 = -99;
   ch_bisect_MT2_332 = -99;
@@ -106,31 +94,17 @@ void doubleHiggsAnalyser::ResetVariables() {
   fromZ = 0;
   from1 = 0;
   from2 = 0;
-}
-
-void doubleHiggsAnalyser::ResetNanoVariables() {
-
-}
-
-void doubleHiggsAnalyser::ResetDelphesVariables() {
+  
   muons.clear();
+  bottoms.clear();
 }
 
 bool doubleHiggsAnalyser::Analysis() {
-  if (delphes_flag) return DelphesAnalysis();
-  else return NanoAnalysis();
-}
-
-bool doubleHiggsAnalyser::NanoAnalysis() {
-  return false;
-}
-
-bool doubleHiggsAnalyser::DelphesAnalysis() {
   //map<Float_t, int, greater<Float_t>> muons : map of <pt,index>:<K,V> of muon sorted by pt.
-    
+  //base selections : MissingET > 20, pT(lepton) > 20, deltaR(ll) < 1.0, m(ll) < 65, deltaR(bb) < 1.3, 95 < m(bb) < 140
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
     if (m->MET<20) return false;
-    missing.SetPtEtaPhiM(m->MET,0,m->Phi,0.19);
+    missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
  
     bool jetflag = false;
     for (int ij = 0; ij < jets->GetEntries(); ij++){
@@ -172,6 +146,9 @@ bool doubleHiggsAnalyser::DelphesAnalysis() {
     lepton2_pt = mu2->PT;
     missing_et = m->MET;
     auto muons = muon1+muon2;
+    if (muons.M() > 65 || muon1.DeltaR(muon2) > 1) {
+        return false;
+    }
     mt = muons.M()*muons.M() + muons.Px()*muons.Px() + muons.Py()*muons.Py();
 
     // get MT2
@@ -185,8 +162,9 @@ bool doubleHiggsAnalyser::DelphesAnalysis() {
               missing.Px(),missing.Py(),
               missing.M(),missing.M());
     basic_MT2_332 = basic_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
-    if (basic_MT2_332 < 0.4) cout << "basic_MT2_332 is "<< basic_MT2_332 << endl;
-    ch_bisect_MT2_332 = ch_bisect_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M()); 
+    ch_bisect_MT2_332 = ch_bisect_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
+    //if (ch_bisect_MT2_332 < 0.1) return false;
+    if (basic_MT2_332==-99) return false;
   
   return true;
 }
@@ -222,7 +200,7 @@ int main(Int_t argc, Char_t** argv)
     tree->SetBranchStatus("*",true);
     
     // for delphes format analysis
-    doubleHiggsAnalyser ana(tree, true, true);
+    doubleHiggsAnalyser ana(tree, true);
     // for nanoAOD format analysis
     // double HiggsAnalyser ana(tree, true);
     ana.Initiate("test.root"); // usage : Initiate("outputfilename.root")

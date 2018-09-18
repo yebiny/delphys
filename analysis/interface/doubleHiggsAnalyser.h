@@ -5,7 +5,6 @@
 
 class doubleHiggsAnalyser {
 private :
-  Bool_t delphes_flag; 
   TTree *del_tree;
 
   TFile *out_file;
@@ -42,6 +41,7 @@ private :
   TClonesArray *missings = 0;
   TClonesArray *jets = 0;
   std::map<Float_t, int, std::greater<Float_t>> muons;
+  std::map<Float_t, int, std::greater<Float_t>> bottoms;
 
   // MT2 Calculators
   Mt2::Basic_Mt2_332_Calculator basic_mt2_332Calculator;
@@ -59,11 +59,7 @@ public :
   void Initiate(TString output_file_name);
   // during loop
   void ResetVariables();
-  void ResetNanoVariables();
-  void ResetDelphesVariables();
   bool Analysis();
-  bool NanoAnalysis();
-  bool DelphesAnalysis();
     // calculating MT2
     double get_MT2();
     double get_Basic_332_MT2();
@@ -72,25 +68,16 @@ public :
   virtual void Loop();
 
   doubleHiggsAnalyser(TTree *tree=0, Bool_t isMC = false);
-  doubleHiggsAnalyser(TTree *tree=0, Bool_t isMC = false, Bool_t isDelphes = false);
-  doubleHiggsAnalyser(TChain *tchain=0, Bool_t isMC = false, Bool_t isDelphes = false);
+  doubleHiggsAnalyser(TChain *tchain=0, Bool_t isMC = false);
   ~doubleHiggsAnalyser();
 };
 
 // Constructors //////
-doubleHiggsAnalyser::doubleHiggsAnalyser(TTree *tree, Bool_t isMC, Bool_t isDelphes) {
-  if (!isDelphes) {
-    throw std::invalid_argument("This constructor (tree, isMC, isDelphes) is for Delphes Object Analysis");
-  }
-  delphes_flag = isDelphes;
+doubleHiggsAnalyser::doubleHiggsAnalyser(TTree *tree, Bool_t isMC) {
   del_tree = tree;
 }
 
-doubleHiggsAnalyser::doubleHiggsAnalyser(TChain *tchain, Bool_t isMC, Bool_t isDelphes) {
-  if (!isDelphes) {
-    throw std::invalid_argument("This constructor (tree, isMC, isDelphes) is for Delphes Object Analysis");
-  }
-  delphes_flag = isDelphes;
+doubleHiggsAnalyser::doubleHiggsAnalyser(TChain *tchain, Bool_t isMC) {
   TTree *tree = dynamic_cast<TTree*>(tchain);
   del_tree = tree;
 }
