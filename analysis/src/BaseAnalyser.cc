@@ -65,17 +65,19 @@ void BaseAnalyser::InitDelphesBranch() {
 }
 
 
-void BaseAnalyser::SetBranchAddress(std::set<TString> branches, Bool_t keep) {
+void BaseAnalyser::SetBranchAddress(std::set<TString> branches, Bool_t drop) {
   InitDelphesBranch();
 
   std::set<TString> in_branches;
-  if (keep) {
-    in_branches = std::move(branches);
-  } else {
+
+  if (drop) {
     std::set_difference(kAllDelphesBranches.begin(), kAllDelphesBranches.end(), 
                         branches.begin(), branches.end(),
                         std::inserter(in_branches, in_branches.begin()));
+  } else {
+    in_branches = std::move(branches);
   }
+
 
   for(const auto & each : in_branches) {
       if (each.EqualTo("Event"))

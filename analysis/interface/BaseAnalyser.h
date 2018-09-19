@@ -30,7 +30,7 @@ class BaseAnalyser {
   ~BaseAnalyser();
 
   void InitDelphesBranch();
-  void SetBranchAddress(std::set<TString> branches, Bool_t keep=true);
+  void SetBranchAddress(std::set<TString> branches, Bool_t drop=false);
   void SetBranchAddress();
 
   virtual void MakeBranch() = 0;
