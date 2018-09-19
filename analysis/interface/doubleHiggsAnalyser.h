@@ -31,9 +31,24 @@ private :
   Int_t from1 = 0;
   Int_t from2 = 0;
 
+  Int_t mu1_mother = 0;
+  Int_t mu2_mother = 0;
+  Int_t bot1_mother = 0;
+  Int_t bot2_mother = 0;
+
+  Int_t mu1_grmother = 0;
+  Int_t mu2_grmother = 0;
+  Int_t bot1_grmother = 0;
+  Int_t bot2_grmother = 0;
+
+
   // TLorentzVectors
   TLorentzVector muon1;
   TLorentzVector muon2;
+  TLorentzVector muonmuon;
+  TLorentzVector bottom1;
+  TLorentzVector bottom2;
+  TLorentzVector bottombottom;
   TLorentzVector missing;
 
   // Delphes Variables

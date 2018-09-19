@@ -102,10 +102,13 @@ void doubleHiggsAnalyser::ResetVariables() {
 bool doubleHiggsAnalyser::Analysis() {
   //map<Float_t, int, greater<Float_t>> muons : map of <pt,index>:<K,V> of muon sorted by pt.
   //base selections : MissingET > 20, pT(lepton) > 20, deltaR(ll) < 1.0, m(ll) < 65, deltaR(bb) < 1.3, 95 < m(bb) < 140
+    // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
     if (m->MET<20) return false;
     missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
+    missing_et = m->MET;
  
+    // b jets
     for (int ij = 0; ij < jets->GetEntries(); ij++){
       auto jet = static_cast<const Jet *>(jets->At(ij));
       if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID) continue;
@@ -118,9 +121,23 @@ bool doubleHiggsAnalyser::Analysis() {
 
     bottom_iter = bottoms.begin();
     
+    auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
+    bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass); 
+    bottom_iter ++;
+    
+    auto bot2 = static_cast<const Jet *>(jets->At(bottom_iter->second));
+    bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
+    bottombottom = bottom1+bottom2;
+    
+    if (bottombottom.M()<95 || bottombottom.M()>140 || bottom1.DeltaR(bottom2)>1.3) {
+        return false;
+    }
+    
+    // leptons (muons)
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID || abs(p->PID)!=doubleHiggsAnalyser::Electron_PID || abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
+      //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID || abs(p->PID)!=doubleHiggsAnalyser::Electron_PID || abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
       muons.insert(make_pair(p->PT,ip));
     }
   
@@ -148,14 +165,14 @@ bool doubleHiggsAnalyser::Analysis() {
     
     lepton1_pt = mu1->PT;
     lepton2_pt = mu2->PT;
-    missing_et = m->MET;
-    auto muons = muon1+muon2;
-    if (muons.M() > 65 || muon1.DeltaR(muon2) > 1) {
+    
+    auto muonmuon = muon1+muon2;
+    if (muonmuon.M() > 65 || muon1.DeltaR(muon2) > 1) {
         return false;
     }
-    mt = muons.Mt();
+    mt = muonmuon.Mt();
 
-    // get MT2
+    // MT2
     Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
     Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(muon2.Px(),muon2.Py()), muon2.M());
     Mt2::TwoVector pT_Miss(missing.Px(), missing.Py());
