@@ -12,14 +12,10 @@
 TTAllJetsFilter::TTAllJetsFilter(const TString & in_path,
                                  const TString & out_path) : BaseAnalyser() {
 
-  std::cout << "start ctor" << std::endl;
-
   in_file_ = TFile::Open(in_path, "READ");
   in_tree_ = dynamic_cast<TTree*>(in_file_->Get("Delphes"));
 
-  std::cout << "Start to set branch addressess" << std::endl;
   SetBranchAddress();
-  std::cout << "Finish off setting branch addressess" << std::endl;
 
   out_file_ = TFile::Open(out_path, "RECREATE");
   out_tree_ = in_tree_->CloneTree(0);
@@ -86,12 +82,12 @@ TTAllJetsFilter::~TTAllJetsFilter() {
 
 
 void TTAllJetsFilter::MakeBranch() {
-
+  return;
 }
 
 
 void TTAllJetsFilter::Reset() {
-
+  return;
 }
 
 
