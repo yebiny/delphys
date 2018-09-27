@@ -6,10 +6,10 @@
 #include <cmath>
 #include <iostream>
 
-namespace delphys  {
+namespace delphys {
 
-const Double_t kPi = TMath::Pi();
-const Double_t kTwoPi = 2 * kPi;
+static const Double_t kPi = TMath::Pi();
+static const Double_t kTwoPi = TMath::TwoPi();
 
 inline Double_t ComputeDeltaPhi(Double_t phi1, Double_t phi2) {
   Double_t dphi = phi1 - phi2;
@@ -34,6 +34,5 @@ inline Double_t ComputeDeltaR(Double_t eta1, Double_t eta2,
 }
 
 } // NOTE end of delphys namespace
-
 
 #endif // DELPHYS_EXTERNAL_MATHUTILS_H_
