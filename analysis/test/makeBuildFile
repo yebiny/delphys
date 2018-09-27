@@ -63,7 +63,9 @@ def main():
     parser.add_argument("-b", "--backup", action="store_true")
     args = parser.parse_args()
 
-    delphes_dir = os.path.abspath(args.delphes)
+    # delphes_dir = os.path.abspath(args.delphes)
+    delphes_dir = args.delphes
+    print("Delphes: {}".format(delphes_dir))
 
     # FIXME make it flexible
     # NOTE assumne you are in delphys/analysis/test
