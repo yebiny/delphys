@@ -44,6 +44,11 @@ _BIN_TAG = '''<bin name="{name}" file="{file_}">
 _CXX_EXT_LIST = [".cc", ".cxx", ".C", ".cpp"]
 
 
+def get_abspath(path):
+    if path.startswith("~"):
+        path = os.path.expanduser(path)
+    return os.path.abspath(path)
+
 def backup(path):
     root, ext = os.path.splitext(path)
 
@@ -69,7 +74,7 @@ def main():
 
     # FIXME make it flexible
     # NOTE assumne you are in delphys/analysis/test
-    delphys_dir = os.path.abspath("../..")
+    delphys_dir = get_abspath("../..")
     if os.path.basename(delphys_dir) != "delphys":
         raise OSError("please run this script in delphys/analysis/test")
     
