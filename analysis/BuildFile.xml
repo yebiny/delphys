@@ -9,6 +9,3 @@
   <lib name="1"/>
 </export>
 
-<flags CXXFLAGS="-I/cms/ldap_home/slowmoyang/Install/Delphes-3.4.1"/>
-<flags CXXFLAGS="-L/cms/ldap_home/slowmoyang/Install/Delphes-3.4.1"/>
-<flags CXXFLAGS="-lDelphes"/>
