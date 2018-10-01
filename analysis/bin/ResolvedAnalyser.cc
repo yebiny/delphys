@@ -66,8 +66,8 @@ void ResolvedAnalyser::MakeBranch() {
   // out_tree_->Branch("jet_b_tracking", &jets_b_tracking_);
 
   // per constituents : vector of vector of
-  out_tree_->Branch("constituent_p4_", &constituent_p4_);
-  out_tree_->Branch("constituent_type_", &constituent_type_);
+  out_tree_->Branch("constituent_p4", &constituent_p4_);
+  out_tree_->Branch("constituent_type", &constituent_type_);
 
   return ;
 }
@@ -140,13 +140,13 @@ void ResolvedAnalyser::AnalyseEvent() {
     Float_t j_eta = jet->Eta;
     Float_t j_phi = jet->Phi;
 
+    constituent_p4_.push_back(std::vector<TLorentzVector>());
+    constituent_type_.push_back(std::vector<Int_t>());
+
     Int_t num_chad = 0, num_nhad = 0, num_electron = 0, num_muon = 0, num_photon = 0;
     std::vector<Double_t> cons_deta, cons_dphi, cons_pt;
+
     for (Int_t con_idx = 0; con_idx < jet->Constituents.GetEntries(); con_idx++) {
-
-      constituent_p4_.push_back(std::vector<TLorentzVector>());
-      constituent_type_.push_back(std::vector<Int_t>());
-
       auto constituent = jet->Constituents.At(con_idx);
 
       TLorentzVector c_p4;
