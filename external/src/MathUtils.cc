@@ -2,31 +2,17 @@
 
 #include "TMatrixDfwd.h"
 #include "TVectorD.h"
+#include "TVector2.h"
 
 namespace delphys {
 
-Double_t ComputeDeltaPhi(Double_t phi1, Double_t phi2) {
-  Double_t dphi = phi1 - phi2;
-  if(TMath::IsNaN(dphi)) {
-    std::cerr << "ComputeDeltaPhi function called with NaN" << std::endl;
-    return dphi;
-  }
-  while (dphi >= kPi) dphi -= kTwoPi;
-  while (dphi < -kPi) dphi += kTwoPi;
-  return dphi;
-}
-
-
-Double_t ComputeDeltaR(Double_t deta, Double_t dphi) {
-  return std::hypot(deta, dphi);
-}
-
 
 Double_t ComputeDeltaR(Double_t eta1, Double_t eta2,
-                              Double_t phi1, Double_t phi2) {
+                       Double_t phi1, Double_t phi2) {
   Double_t deta = eta1 - eta2;
-  Double_t dphi = ComputeDeltaPhi(phi1, phi2);
-  return ComputeDeltaR(deta, dphi);
+  Double_t dphi = TVector2::Phi_mpi_pi(phi1 - phi2);
+  Double_t dr = std::hypot(deta, dphi);
+  return dr;
 }
 
 
@@ -54,7 +40,7 @@ std::tuple<Double_t, Double_t> ComputeAxes(
     w2_sum += w2;
 
     m00 += w2 * std::pow(x, 2);
-    m11 += w2 * std::abs(x) * std::abs(y);
+    m11 += w2 * std::abs(x * y);
     m00 += w2 * std::pow(y, 2);
   } 
 

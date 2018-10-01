@@ -69,7 +69,7 @@ def main():
     args = parser.parse_args()
 
     # delphes_dir = os.path.abspath(args.delphes)
-    delphes_dir = args.delphes
+    delphes_dir = get_abspath(args.delphes)
     print("Delphes: {}".format(delphes_dir))
 
     # FIXME make it flexible

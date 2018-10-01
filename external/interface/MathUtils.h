@@ -9,12 +9,6 @@
 
 namespace delphys {
 
-static const Double_t kPi = TMath::Pi();
-static const Double_t kTwoPi = TMath::TwoPi();
-
-Double_t ComputeDeltaPhi(Double_t phi1, Double_t phi2);
-Double_t ComputeDeltaR(Double_t deta, Double_t dphi);
-
 Double_t ComputeDeltaR(Double_t eta1, Double_t eta2,
                        Double_t phi1, Double_t phi2);
 
