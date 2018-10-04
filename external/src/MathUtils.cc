@@ -40,8 +40,8 @@ std::tuple<Double_t, Double_t> ComputeAxes(
     w2_sum += w2;
 
     m00 += w2 * std::pow(x, 2);
-    m11 += w2 * std::abs(x * y);
-    m00 += w2 * std::pow(y, 2);
+    m01 += w2 * std::abs(x * y);
+    m11 += w2 * std::pow(y, 2);
   } 
 
   TMatrixDSym covariance_matrix(2);
