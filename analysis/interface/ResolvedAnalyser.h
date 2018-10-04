@@ -22,8 +22,17 @@ class ResolvedAnalyser : private BaseAnalyser {
   std::vector<const Jet*> SelectJet();
   std::vector<const Jet*> selected_jets_;
 
+  Bool_t TrackBottomQuark(const GenParticle* p);
+  Float_t GetBDaughterRatio(const Jet* jet);
+
   // per event
   Int_t label_;
+
+  /* TODO a jet as a point
+  Float_t major_axis_;
+  Float_t minor_axis_;
+  Float_t ptd_;
+  */
 
   // per jet
   std::vector<TLorentzVector> jet_p4_;
@@ -40,7 +49,7 @@ class ResolvedAnalyser : private BaseAnalyser {
   // 0: false / 1: true
   std::vector<Int_t> jet_b_tag_;
   std::vector<Int_t> jet_b_dr_matching_;
-  // std::vector<Int_t> jet_b_tracking_;
+  std::vector<Float_t> jet_b_tracking_;
 
   // per constituents
   std::vector<std::vector<TLorentzVector> > constituent_p4_;

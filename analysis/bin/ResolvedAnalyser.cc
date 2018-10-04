@@ -20,9 +20,9 @@ ResolvedAnalyser::ResolvedAnalyser(const TString & in_path,
   MakeBranch();
 
   TString base_name(gSystem->BaseName(in_path));
-  if (base_name.First("TT") != -1) {
+  if (base_name.Contains("TT")) {
     label_ = 1;
-  } else if (base_name.First("QCD") != -1) {
+  } else if (base_name.Contains("QCD")) {
     label_ = 0;
   } else {
     std::cout << base_name << std::endl;
@@ -63,7 +63,7 @@ void ResolvedAnalyser::MakeBranch() {
 
   out_tree_->Branch("jet_b_tag", &jet_b_tag_);
   out_tree_->Branch("jet_b_dr_matching", &jet_b_dr_matching_);
-  // out_tree_->Branch("jet_b_tracking", &jets_b_tracking_);
+  out_tree_->Branch("jet_b_tracking", &jet_b_tracking_);
 
   // per constituents : vector of vector of
   out_tree_->Branch("constituent_p4", &constituent_p4_);
@@ -88,7 +88,7 @@ void ResolvedAnalyser::Reset() {
 
   jet_b_tag_.clear();
   jet_b_dr_matching_.clear();
-  // jet_b_tracking_.clear();
+  jet_b_tracking_.clear();
 
   constituent_p4_.clear();
   constituent_type_.clear();
@@ -122,6 +122,34 @@ Bool_t ResolvedAnalyser::SelectEvent() {
   }
 
   return kTRUE;
+}
+
+
+Bool_t ResolvedAnalyser::TrackBottomQuark(const GenParticle* p) {
+  Bool_t found_b;
+  while (p->M1 != -1) {
+    p = dynamic_cast<GenParticle*>(particles_->At(p->M1));
+    if ((std::abs(p->PID) == 5) and (p->Status == 23)) {
+      found_b = true;
+      break;
+    }
+  }
+  return found_b;
+}
+
+Float_t ResolvedAnalyser::GetBDaughterRatio(const Jet* jet) {
+  Int_t num_particles = jet->Particles.GetEntries();
+
+  Int_t num_from_b = 0;
+  for (Int_t idx = 0; idx < num_particles; idx++) {
+    auto p = dynamic_cast<const GenParticle*>(jet->Particles[idx]);
+    if (TrackBottomQuark(p)) {
+      num_from_b++;
+    }
+  }
+
+  Float_t b_ratio = static_cast<Float_t>(num_from_b) / num_particles;
+  return b_ratio;
 }
 
 
@@ -196,6 +224,7 @@ void ResolvedAnalyser::AnalyseEvent() {
 
     } // end loop over constituents
 
+    jet_p4_.push_back(j_p4);
     jet_num_chad_.push_back(num_chad);
     jet_num_nhad_.push_back(num_nhad);
     jet_num_electron_.push_back(num_electron);
@@ -230,11 +259,8 @@ void ResolvedAnalyser::AnalyseEvent() {
     }
     jet_b_dr_matching_.push_back(found_matched_b);
 
-
-    // is_from_b = IsFromB(jet);
-
-    // jet_b_tracking_.push_back(true);
-
+    Float_t b_dau_ratio = GetBDaughterRatio(jet);
+    jet_b_tracking_.push_back(b_dau_ratio);
 
   } // end loop over jets
 
