@@ -46,6 +46,14 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("lester_MT2",&lester_MT2,"lester_MT2/F");
   tree->Branch("basic_MT2_332",&basic_MT2_332,"basic_MT2_332/F");
   tree->Branch("ch_bisect_MT2_332",&ch_bisect_MT2_332,"ch_bisect_MT2_332/F");
+  // MT2(b) variables
+  tree->Branch("lester_MT2_b",&lester_MT2_b,"lester_MT2_b/F");
+  tree->Branch("basic_MT2_332_b",&basic_MT2_332_b,"basic_MT2_332_b/F");
+  tree->Branch("ch_bisect_MT2_332_b",&ch_bisect_MT2_332_b,"ch_bisect_MT2_332_b/F");
+  // MT2(l) variables
+  tree->Branch("lester_MT2_l",&lester_MT2_l,"lester_MT2_l/F");
+  tree->Branch("basic_MT2_332_l",&basic_MT2_332_l,"basic_MT2_332_l/F");
+  tree->Branch("ch_bisect_MT2_332_l",&ch_bisect_MT2_332_l,"ch_bisect_MT2_332_l/F");
 
   tree->Branch("lepton1_pt",&lepton1_pt,"lepton1_pt/F");
   tree->Branch("lepton2_pt",&lepton2_pt,"lepton1_pt/F");
@@ -67,6 +75,7 @@ void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
 }
 
 void doubleHiggsAnalyser::SetBranchAddress() {
+  //del_tree->SetBranchAddress("Particle",&particles);
   del_tree->SetBranchAddress("Particle",&particles);
   del_tree->SetBranchAddress("MissingET",&missings);
   del_tree->SetBranchAddress("Jet",&jets);
@@ -102,6 +111,7 @@ void doubleHiggsAnalyser::ResetVariables() {
 bool doubleHiggsAnalyser::Analysis() {
   //map<Float_t, int, greater<Float_t>> muons : map of <pt,index>:<K,V> of muon sorted by pt.
   //base selections : MissingET > 20, pT(lepton) > 20, deltaR(ll) < 1.0, m(ll) < 65, deltaR(bb) < 1.3, 95 < m(bb) < 140
+    
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
     if (m->MET<20) return false;
@@ -118,6 +128,7 @@ bool doubleHiggsAnalyser::Analysis() {
     if (bottoms.size()<2) {
       return false;
     }
+
 
     bottom_iter = bottoms.begin();
     
@@ -173,17 +184,41 @@ bool doubleHiggsAnalyser::Analysis() {
     mt = muonmuon.Mt();
 
     // MT2
-    Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
-    Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(muon2.Px(),muon2.Py()), muon2.M());
+    Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muonmuon.Px(), muonmuon.Py()), muonmuon.M());
+    Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(bottombottom.Px(), bottombottom.Py()), bottombottom.M());
     Mt2::TwoVector pT_Miss(missing.Px(), missing.Py());
     
     lester_MT2 = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-              muon1.M(),muon1.Px(),muon1.Py(),
-              muon2.M(),muon2.Px(),muon2.Px(),
+              muonmuon.M(),muonmuon.Px(),muonmuon.Py(),
+              bottombottom.M(),bottombottom.Px(),bottombottom.Px(),
               missing.Px(),missing.Py(),
               missing.M(),missing.M());
     basic_MT2_332 = basic_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
     ch_bisect_MT2_332 = ch_bisect_mt2_332Calculator.mt2_332(vis_A, vis_B, pT_Miss, missing.M());
+    // MT2(b)
+    Mt2::LorentzTransverseVector vis_A_b(Mt2::TwoVector(bottom1.Px(), bottom1.Py()), bottom1.M());
+    Mt2::LorentzTransverseVector vis_B_b(Mt2::TwoVector(bottom2.Px(), bottom2.Py()), bottom2.M());
+    Mt2::TwoVector pT_Miss_b(muonmuon.Px(), muonmuon.Py());
+    
+    lester_MT2_b = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
+              bottom1.M(),bottom1.Px(),bottom1.Py(),
+              bottom2.M(),bottom2.Px(),bottom2.Px(),
+              muonmuon.Px(),muonmuon.Py(),
+              muonmuon.M(),muonmuon.M());
+    basic_MT2_332_b = basic_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, muonmuon.M());
+    ch_bisect_MT2_332_b = ch_bisect_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, muonmuon.M());
+    // MT2(l)
+    Mt2::LorentzTransverseVector vis_A_l(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
+    Mt2::LorentzTransverseVector vis_B_l(Mt2::TwoVector(muon2.Px(), muon2.Py()), muon2.M());
+    Mt2::TwoVector pT_Miss_l(missing.Px(), missing.Py());
+    
+    lester_MT2_l = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
+              muon1.M(),muon1.Px(),muon1.Py(),
+              muon2.M(),muon2.Px(),muon2.Px(),
+              missing.Px(),missing.Py(),
+              missing.M(),missing.M());
+    basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
+    ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     //if (ch_bisect_MT2_332 < 0.1) return false;
     if (basic_MT2_332==-99) return false;
   

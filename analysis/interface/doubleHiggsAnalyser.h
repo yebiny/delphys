@@ -12,8 +12,14 @@ private :
   
   // Output Variables
   Float_t lester_MT2 = -99;
+  Float_t lester_MT2_b = -99;
+  Float_t lester_MT2_l = -99;
   Float_t basic_MT2_332 = -99;
+  Float_t basic_MT2_332_b = -99;
+  Float_t basic_MT2_332_l = -99;
   Float_t ch_bisect_MT2_332 = -99;
+  Float_t ch_bisect_MT2_332_b = -99;
+  Float_t ch_bisect_MT2_332_l = -99;
   Float_t lepton1_pt = -99;
   Float_t lepton2_pt = -99;
   Float_t missing_et = -99;
