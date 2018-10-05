@@ -126,7 +126,7 @@ Bool_t ResolvedAnalyser::SelectEvent() {
 
 
 Bool_t ResolvedAnalyser::TrackBottomQuark(const GenParticle* p) {
-  Bool_t found_b;
+  Bool_t found_b = false;
   while (p->M1 != -1) {
     p = dynamic_cast<GenParticle*>(particles_->At(p->M1));
     if ((std::abs(p->PID) == 5) and (p->Status == 23)) {
@@ -263,6 +263,7 @@ void ResolvedAnalyser::AnalyseEvent() {
     jet_b_tracking_.push_back(b_dau_ratio);
 
   } // end loop over jets
+
 
   out_tree_->Fill();
 }
