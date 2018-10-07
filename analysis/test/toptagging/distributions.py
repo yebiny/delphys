@@ -18,9 +18,15 @@ def get_random_color():
 
 class Factory(object):
     def __init__(self, paths, tree_name):
-        self._files = OrderedDict({get_name(each): ROOT.TFile.Open(each, "READ") for each in paths})
+        self._files = OrderedDict()
+        self._trees = OrderedDict()
+        for each in paths:
+            name = get_name(each)
+            root_file = ROOT.TFile.Open(each, "READ")
+            self._files[name] = root_file
+            self._trees[name] = root_file.Get(tree_name)
+
         self._names = self._files.keys()
-        self._trees = OrderedDict({name: self._files[name].Get(tree_name) for name in self._names})
         self._colors = {name: get_random_color() for name in self._names}
 
         self._memory = OrderedDict()
@@ -36,7 +42,7 @@ class Factory(object):
         canvas = ROOT.TCanvas("c_" + hist_name, hist_name, 1200, 800)
         bkg = ROOT.TH1F(hist_name, title, nbinsx, xup, xlow)
 
-        hists = {}
+        hists = OrderedDict()
         for tree_name in self._trees.keys():
             name = tree_name + "_" + hist_name
             hists[tree_name] = ROOT.TH1F(name, title, nbinsx, xup, xlow)
@@ -58,7 +64,7 @@ class Factory(object):
             canvas.cd()
 
             legend = ROOT.TLegend(400, 200)
-            for tree_name in self._trees.keys():
+            for tree_name in self._names:
                 hist = self._memory[hist_name]["histograms"][tree_name]
                 hist.SetLineColor(self._colors[tree_name])
                 hist.SetLineWidth(4)
@@ -71,8 +77,8 @@ class Factory(object):
             bkg.Draw("hist")
             legend.Draw()
 
-            for t_name in self._trees.keys():
-                hist = histograms[t_name]
+            for tree_name in self._names:
+                hist = histograms[tree_name]
                 hist.Draw("hist same")
 
             canvas.SaveAs("{}.png".format(hist_name))
