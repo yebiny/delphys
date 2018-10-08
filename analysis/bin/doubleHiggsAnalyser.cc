@@ -60,6 +60,12 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("missing_et",&missing_et,"missing_et/F");
   tree->Branch("mt",&mt,"mt/F");
 
+  // other kinematics variables
+  tree->Branch("muon1_mass",&muon1_mass,"muon1_mass/F");
+  tree->Branch("muon2_mass",&muon2_mass,"muon2_mass/F");
+  tree->Branch("muon_mass",&muon_mass,"muon_mass/F");
+  tree->Branch("center_of_mass_ll",&center_of_mass_ll,"center_of_mass_ll/F");
+
   // truth matching variables
   tree->Branch("fromHiggs",&fromHiggs,"fromHiggs/I");
   tree->Branch("fromTop",&fromTop,"fromTop/I");
@@ -98,12 +104,16 @@ void doubleHiggsAnalyser::ResetVariables() {
   lepton2_pt = -99;
   missing_et = -99;
   mt = -99;
+  muon1_mass = -99;
+  muon2_mass = -99;
+  muon_mass = -99;
+  muon_px = -99;
+  center_of_mass_ll = -99;
   fromHiggs = 0;
   fromTop = 0;
   fromZ = 0;
   from1 = 0;
   from2 = 0;
-  
   muons.clear();
   bottoms.clear();
 }
@@ -140,7 +150,7 @@ bool doubleHiggsAnalyser::Analysis() {
     bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
     bottombottom = bottom1+bottom2;
     
-    if (bottombottom.M()<95 || bottombottom.M()>140 || bottom1.DeltaR(bottom2)>1.3) {
+    if (bottombottom.M()<95 || bottombottom.M()>140 || fabs(bottom1.DeltaR(bottom2))>1.3) {
         return false;
     }
     
@@ -165,6 +175,7 @@ bool doubleHiggsAnalyser::Analysis() {
     if (from1==doubleHiggsAnalyser::Top_PID) fromTop++;
     if (from1==doubleHiggsAnalyser::Z_PID) fromZ++;
     muon1.SetPtEtaPhiM(mu1->PT,mu1->Eta,mu1->Phi,mu1->Mass);
+    muon1_mass = muon1.M();
     ++muon_iter;
     auto mu2 = static_cast<const GenParticle *>(particles->At(muon_iter->second));
     int from2 = isFrom(particles, muon_iter->second);
@@ -173,16 +184,17 @@ bool doubleHiggsAnalyser::Analysis() {
     if (from2==doubleHiggsAnalyser::Top_PID) fromTop++;
     if (from2==doubleHiggsAnalyser::Z_PID) fromZ++;
     muon2.SetPtEtaPhiM(mu2->PT,mu2->Eta,mu2->Phi,mu2->Mass);
+    muon2_mass = muon2.M();
     
     lepton1_pt = mu1->PT;
     lepton2_pt = mu2->PT;
     
     auto muonmuon = muon1+muon2;
-    if (muonmuon.M() > 65 || muon1.DeltaR(muon2) > 1) {
+    if (muonmuon.M() > 65 || fabs(muon1.DeltaR(muon2)) > 1) {
         return false;
     }
     mt = muonmuon.Mt();
-
+    center_of_mass_ll = sqrt(muonmuon.E());
     // MT2
     Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muonmuon.Px(), muonmuon.Py()), muonmuon.M());
     Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(bottombottom.Px(), bottombottom.Py()), bottombottom.M());
@@ -211,7 +223,6 @@ bool doubleHiggsAnalyser::Analysis() {
     Mt2::LorentzTransverseVector vis_A_l(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
     Mt2::LorentzTransverseVector vis_B_l(Mt2::TwoVector(muon2.Px(), muon2.Py()), muon2.M());
     Mt2::TwoVector pT_Miss_l(missing.Px(), missing.Py());
-    
     lester_MT2_l = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
               muon1.M(),muon1.Px(),muon1.Py(),
               muon2.M(),muon2.Px(),muon2.Px(),
@@ -229,13 +240,15 @@ void doubleHiggsAnalyser::Loop() {
   TTree *t = 0;
   bool keep = false;
   t = del_tree;
-
+  int nevent = 0;
   for (int iev = 0; iev < t->GetEntries(); iev++) {
     t->GetEntry(iev);
     keep = doubleHiggsAnalyser::Analysis();
     if (keep) out_tree->Fill();
     doubleHiggsAnalyser::ResetVariables();
+    nevent ++;
   }
+  cout << "n_events are " << nevent << endl;
 }
 
 void doubleHiggsAnalyser::Finalize() {

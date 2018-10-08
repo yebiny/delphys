@@ -31,6 +31,8 @@ private :
   Float_t muon_px = -99;
   Float_t muon_py = -99;
 
+  Float_t center_of_mass_ll = -99;
+
   Int_t fromHiggs = 0;
   Int_t fromTop = 0;
   Int_t fromZ = 0;
@@ -46,7 +48,6 @@ private :
   Int_t mu2_grmother = 0;
   Int_t bot1_grmother = 0;
   Int_t bot2_grmother = 0;
-
 
   // TLorentzVectors
   TLorentzVector muon1;
