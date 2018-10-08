@@ -263,8 +263,9 @@ int main(Int_t argc, Char_t** argv)
     //f->GetObject("Delphes", tree);
     TChain *tree = new TChain("Delphes");
 
+    //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
     //tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
-    tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
+    tree->Add("/xrootd/store/user/seyang/Data/TopTagging/TT/*.root"); // ui
 
     tree->SetBranchStatus("*",true);
     
