@@ -16,14 +16,14 @@ Double_t ComputeDeltaR(Double_t eta1, Double_t eta2,
 }
 
 
-std::tuple<Double_t, Double_t> ComputeAxes(
+std::tuple<Double_t, Double_t, Double_t> ComputeAxes(
     const std::vector<Double_t> & x_values,
     const std::vector<Double_t> & y_values,
     const std::vector<Double_t> & weights) {
 
   if (x_values.size() != y_values.size() or x_values.size() != weights.size()) {
     std::cerr << "different size" << std::endl;
-    return std::make_tuple(-1.0, -1.0);
+    return std::make_tuple(-1.0, -1.0, -1.0);
   }
   Int_t num_points = x_values.size();
 
@@ -40,10 +40,14 @@ std::tuple<Double_t, Double_t> ComputeAxes(
     w2_sum += w2;
 
     m00 += w2 * std::pow(x, 2);
-    m01 += w2 * std::abs(x * y);
+    m01 -= w2 * x * y;
     m11 += w2 * std::pow(y, 2);
   } 
 
+  // TMatrixTSm
+  // Note that in this implementation both matrix element m[i][j] and m[j][i]
+  // are updated and stored in memory . However, when making the object
+  // persistent only the upper right triangle is stored .
   TMatrixDSym covariance_matrix(2);
   covariance_matrix(0, 0) = m00;
   covariance_matrix(0, 1) = m01;
@@ -56,7 +60,9 @@ std::tuple<Double_t, Double_t> ComputeAxes(
   Double_t major_axis = std::sqrt(eigen_values[0] / w2_sum);
   Double_t minor_axis = std::sqrt(eigen_values[1] / w2_sum);
 
-  return std::make_tuple(major_axis, minor_axis);
+  Double_t eccentricity = std::sqrt(1 - (eigen_values[1] / eigen_values[0]));
+
+  return std::make_tuple(major_axis, minor_axis, eccentricity);
 }
 
 

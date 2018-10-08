@@ -44,6 +44,7 @@ class ResolvedAnalyser : private BaseAnalyser {
 
   std::vector<Float_t> jet_major_axis_;
   std::vector<Float_t> jet_minor_axis_;
+  std::vector<Float_t> jet_eccentricity_;
   std::vector<Float_t> jet_ptd_; // jet energy sharing variable = L2 norm / L1 norm
 
   // 0: false / 1: true

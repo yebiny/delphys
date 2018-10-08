@@ -59,6 +59,7 @@ void ResolvedAnalyser::MakeBranch() {
 
   out_tree_->Branch("jet_major_axis", &jet_major_axis_);
   out_tree_->Branch("jet_minor_axis", &jet_minor_axis_);
+  out_tree_->Branch("jet_eccentricity", &jet_eccentricity_);
   out_tree_->Branch("jet_ptd", &jet_ptd_);
 
   out_tree_->Branch("jet_b_tag", &jet_b_tag_);
@@ -84,6 +85,7 @@ void ResolvedAnalyser::Reset() {
 
   jet_major_axis_.clear();
   jet_minor_axis_.clear();
+  jet_eccentricity_.clear();
   jet_ptd_.clear();
 
   jet_b_tag_.clear();
@@ -186,12 +188,10 @@ void ResolvedAnalyser::AnalyseEvent() {
         if (std::abs(track->PID) == kElectronPID_) { 
           c_type = kElectronType_;
           num_electron++;
-        }
-        else if (std::abs(track->PID) == kMuonPID_) {
+        } else if (std::abs(track->PID) == kMuonPID_) {
           c_type = kMuonType_;
           num_muon++;
-        }
-        else { 
+        } else { 
           c_type = kChargedHadronType_;
           num_chad++;
         }
@@ -202,12 +202,10 @@ void ResolvedAnalyser::AnalyseEvent() {
         if (tower->Eem == 0.0) {
           c_type = kNeutralHadronType_;
           num_nhad++;
-        }
-        else if (tower->Ehad == 0.0) {
+        } else if (tower->Ehad == 0.0) {
           c_type = kPhotonType_;
           num_photon++;
-        }
-        else
+        } else
           std::cout << ":p" << std::endl;
 
       } else {
@@ -231,11 +229,12 @@ void ResolvedAnalyser::AnalyseEvent() {
     jet_num_muon_.push_back(num_muon);
     jet_num_photon_.push_back(num_photon);
 
-    Float_t major_axis, minor_axis;
-    std::tie(major_axis, minor_axis) = delphys::ComputeAxes(cons_deta, cons_dphi, cons_pt);
+    Float_t major_axis, minor_axis, eccentricity;
+    std::tie(major_axis, minor_axis, eccentricity) = delphys::ComputeAxes(cons_deta, cons_dphi, cons_pt);
 
     jet_major_axis_.push_back(major_axis);
     jet_minor_axis_.push_back(minor_axis);
+    jet_eccentricity_.push_back(eccentricity);
 
     // jet energy sharing variable
     Float_t pt_sum = std::accumulate(cons_pt.begin(), cons_pt.end(), 0.0f);
