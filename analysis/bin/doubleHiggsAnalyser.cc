@@ -84,6 +84,9 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("bottom2MotherPID",&bot2_mother,"bot2_mother/I");
   tree->Branch("bottom1GrMotherPID",&bot1_grmother,"bot1_grmother/I");
   tree->Branch("bottom2GrMotherPID",&bot2_grmother,"bot2_grmother/I");
+
+  // cut flow
+  tree->Branch("step",&step,"step/I");
 }
 
 void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
@@ -143,6 +146,17 @@ void doubleHiggsAnalyser::ResetVariables() {
   missing_et = -99;
 
   // truth matching variables 
+  lep1_mother = 0;
+  lep2_mother = 0;
+  bot1_mother = 0;
+  bot2_mother = 0;
+  lep1_grmother = 0;
+  lep2_grmother = 0;
+  bot1_grmother = 0;
+  bot2_grmother = 0;
+
+  // for the cut flow
+  step = 0;
   
   // lepton and bottom maps
   leptons.clear();
@@ -155,19 +169,15 @@ bool doubleHiggsAnalyser::Analysis() {
     
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
-    //if (m->MET<20) return false; // base cut 1
+    if (m->MET<20) {return true;} step++;// base cut 1
     missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
     missing_et = m->MET;
     
     // leptons (muons)
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      //if (abs(p->PID)!=doubleHiggsAnalyser::Muon_PID 
-      //    || p->PT<20  // base cut 2
-      //    || fabs(p->Eta)>2.5 || p->M1==-1) continue;
       if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID && abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue; // check if the particle is lepton
     if (fabs(p->Eta)>2.5 || p->M1==-1) continue; // check the lepton's Eta and pT.
-    //if (p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue; // check the lepton's Eta and pT.
       leptons.insert(make_pair(p->PT,ip));
     }
   
@@ -182,11 +192,6 @@ bool doubleHiggsAnalyser::Analysis() {
     auto lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
     auto leptonlepton = lepton1+lepton2;
-    //if (leptonlepton.M() > 65 // base cut 4
-    //    || fabs(lepton1.DeltaR(lepton2)) > 1 // base cut 3
-    //    ) {
-    //    return false;
-    //}
     auto lepton1_m = getMother(particles, lep1);
     lep1_mother = abs(lepton1_m->PID);
     auto lepton1_grm = getMother(particles, lepton1_m);
@@ -204,6 +209,9 @@ bool doubleHiggsAnalyser::Analysis() {
     lepton2_mass = lepton2.M();
     lepton1_pt = lepton1.Pt();
     lepton2_pt = lepton2.Pt();
+    if (lepton1_pt<20 && lepton2_pt<20) {return true;} step++; // base cut 2
+    if (lepton_deltaR > 1) {return true;} step++; // base cut 3
+    if (lepton_mass > 65) {return true;} step++; // base cut 4
      
     // b jets
     for (int ij = 0; ij < jets->GetEntries(); ij++){
@@ -239,11 +247,8 @@ bool doubleHiggsAnalyser::Analysis() {
     bottom2_mass = bottom2.M();
     bottom1_pt = bottom1.Pt();
     bottom2_pt = bottom2.Pt();
-    //if (( bottombottom.M()<95 || bottombottom.M()>140 )// base cut 6
-    //    || fabs(bottom1.DeltaR(bottom2))>1.3 // base cut 5
-    //    ) {
-    //    return false;
-    //}
+    if (bottom_deltaR > 1.3) {return true;} step++; // base cut 5
+    if (bottom_mass < 95 || bottom_mass > 140) {return true;} step++; // base cut 6
    
     // MT2
     Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(leptonlepton.Px(), leptonlepton.Py()), leptonlepton.M());
@@ -314,12 +319,12 @@ int main(Int_t argc,Char_t** argv)
   TChain *tree = new TChain("Delphes");
   TString output_name;
   //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
-  //tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
-  for (int i = 1; i<50; i++){
-  std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
-  tree->Add(filename.c_str());
-  }
-  output_name = "TT_50.root";
+  tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
+  //for (int i = 1; i<50; i++){
+  //std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
+  //tree->Add(filename.c_str());
+  //}
+  output_name = "hh_7.root";
     
   tree->SetBranchStatus("*",true);
     

@@ -53,6 +53,8 @@ private :
   Int_t bot1_grmother = 0;
   Int_t bot2_grmother = 0;
 
+  Int_t step = 0;
+
   // TLorentzVectors
   TLorentzVector lepton1;
   TLorentzVector lepton2;
