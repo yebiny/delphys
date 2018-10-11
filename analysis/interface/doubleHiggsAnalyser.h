@@ -11,6 +11,7 @@ private :
   TTree *out_tree;
   
   // Output Variables
+  //// MT2 variables
   Float_t lester_MT2 = -99;
   Float_t lester_MT2_b = -99;
   Float_t lester_MT2_l = -99;
@@ -20,39 +21,42 @@ private :
   Float_t ch_bisect_MT2_332 = -99;
   Float_t ch_bisect_MT2_332_b = -99;
   Float_t ch_bisect_MT2_332_l = -99;
+  //// lepton kinematic variables
+  Float_t lepton_mass = -99;
+  Float_t lepton_pt = -99;
+  Float_t lepton_px = -99;
+  Float_t lepton_py = -99;
+  Float_t lepton_deltaR = -99;
+  Float_t lepton1_mass = -99;
+  Float_t lepton2_mass = -99;
   Float_t lepton1_pt = -99;
   Float_t lepton2_pt = -99;
+  //// bottom kinematic variables
+  Float_t bottom_mass = -99;
+  Float_t bottom_pt = -99;
+  Float_t bottom_px = -99;
+  Float_t bottom_py = -99;
+  Float_t bottom_deltaR = -99;
+  Float_t bottom1_mass = -99;
+  Float_t bottom2_mass = -99;
+  Float_t bottom1_pt = -99;
+  Float_t bottom2_pt = -99;
+  //// missing et
   Float_t missing_et = -99;
-  Float_t mt = -99;
-
-  Float_t muon1_mass = -99;
-  Float_t muon2_mass = -99;
-  Float_t muon_mass = -99;
-  Float_t muon_px = -99;
-  Float_t muon_py = -99;
-
-  Float_t center_of_mass_ll = -99;
-
-  Int_t fromHiggs = 0;
-  Int_t fromTop = 0;
-  Int_t fromZ = 0;
-  Int_t from1 = 0;
-  Int_t from2 = 0;
-
-  Int_t mu1_mother = 0;
-  Int_t mu2_mother = 0;
+  //// truth matching variables
+  Int_t lep1_mother = 0;
+  Int_t lep2_mother = 0;
   Int_t bot1_mother = 0;
   Int_t bot2_mother = 0;
-
-  Int_t mu1_grmother = 0;
-  Int_t mu2_grmother = 0;
+  Int_t lep1_grmother = 0;
+  Int_t lep2_grmother = 0;
   Int_t bot1_grmother = 0;
   Int_t bot2_grmother = 0;
 
   // TLorentzVectors
-  TLorentzVector muon1;
-  TLorentzVector muon2;
-  TLorentzVector muonmuon;
+  TLorentzVector lepton1;
+  TLorentzVector lepton2;
+  TLorentzVector leptonlepton;
   TLorentzVector bottom1;
   TLorentzVector bottom2;
   TLorentzVector bottombottom;
@@ -62,8 +66,8 @@ private :
   TClonesArray *particles = 0;
   TClonesArray *missings = 0;
   TClonesArray *jets = 0;
-  std::map<Float_t, int, std::greater<Float_t>> muons;
-  std::map<Float_t, int, std::greater<Float_t>>::iterator muon_iter;
+  std::map<Float_t, int, std::greater<Float_t>> leptons;
+  std::map<Float_t, int, std::greater<Float_t>>::iterator lepton_iter;
   std::map<Float_t, int, std::greater<Float_t>> bottoms;
   std::map<Float_t, int, std::greater<Float_t>>::iterator bottom_iter;
 

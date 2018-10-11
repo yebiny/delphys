@@ -20,7 +20,7 @@
 using namespace std;
 
 // return mother particle(GenParticle) of particle 'p' among 'particles'.
-GenParticle* getMother(TClonesArray* particles, GenParticle* p){
+GenParticle* getMother(TClonesArray* particles, const GenParticle* p){
   if (p->M1==-1) return nullptr;
   auto mom = static_cast<GenParticle *>(particles->At(p->M1));
   while (mom->PID == p->PID){
@@ -31,14 +31,15 @@ GenParticle* getMother(TClonesArray* particles, GenParticle* p){
 }
 
 // return the PID of the mother particle of the particle at 'ip' among 'particles'
-int isFrom(TClonesArray* particles, int ip){
+int* isFrom(TClonesArray* particles, int ip){
    auto p = static_cast<GenParticle *>(particles->At(ip));
    // check if it's from Higgs
    auto mom = getMother(particles, p); 
    if (mom==nullptr) return 0;
    auto grmom = getMother(particles, mom);
    if (grmom==nullptr) return 0;
-   return grmom->PID;
+   static int pedigree[2] = {mom->PID, grmom->PID};
+   return pedigree;
 }
 
 void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
@@ -54,25 +55,35 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("lester_MT2_l",&lester_MT2_l,"lester_MT2_l/F");
   tree->Branch("basic_MT2_332_l",&basic_MT2_332_l,"basic_MT2_332_l/F");
   tree->Branch("ch_bisect_MT2_332_l",&ch_bisect_MT2_332_l,"ch_bisect_MT2_332_l/F");
-
+  // lepton kinematic variables
+  tree->Branch("lepton_mass",&lepton_mass,"lepton_mass/F");
+  tree->Branch("lepton_px",&lepton_px,"lepton_px/F");
+  tree->Branch("lepton_py",&lepton_py,"lepton_py/F");
+  tree->Branch("lepton_deltaR",&lepton_deltaR,"lepton_deltaR/F");
+  tree->Branch("lepton1_mass",&lepton1_mass,"lepton1_mass/F");
+  tree->Branch("lepton2_mass",&lepton2_mass,"lepton2_mass/F");
   tree->Branch("lepton1_pt",&lepton1_pt,"lepton1_pt/F");
   tree->Branch("lepton2_pt",&lepton2_pt,"lepton1_pt/F");
+  // bottom kinematic variables
+  tree->Branch("bottom_mass",&bottom_mass,"bottom_mass/F");
+  tree->Branch("bottom_px",&bottom_px,"bottom_px/F");
+  tree->Branch("bottom_py",&bottom_py,"bottom_py/F");
+  tree->Branch("bottom_deltaR",&bottom_deltaR,"bottom_deltaR/F");
+  tree->Branch("bottom1_mass",&bottom1_mass,"bottom/F");
+  tree->Branch("bottom2_mass",&bottom2_mass,"bottom/F");
+  tree->Branch("bottom1_pt",&bottom1_pt,"bottom1_pt/F");
+  tree->Branch("bottom2_pt",&bottom2_pt,"bottom2_pt/F");
   tree->Branch("missing_et",&missing_et,"missing_et/F");
-  tree->Branch("mt",&mt,"mt/F");
-
-  // other kinematics variables
-  tree->Branch("muon1_mass",&muon1_mass,"muon1_mass/F");
-  tree->Branch("muon2_mass",&muon2_mass,"muon2_mass/F");
-  tree->Branch("muon_mass",&muon_mass,"muon_mass/F");
-  tree->Branch("center_of_mass_ll",&center_of_mass_ll,"center_of_mass_ll/F");
 
   // truth matching variables
-  tree->Branch("fromHiggs",&fromHiggs,"fromHiggs/I");
-  tree->Branch("fromTop",&fromTop,"fromTop/I");
-  tree->Branch("fromZ",&fromZ,"fromZ/I");
-
-  tree->Branch("lepton1MotherPID",&from1,"from1/I");
-  tree->Branch("lepton2MotherPID",&from2,"from2/I");
+  tree->Branch("lepton1MotherPID",&lep1_mother,"lep1_mother/I");
+  tree->Branch("lepton2MotherPID",&lep2_mother,"lep2_mother/I");
+  tree->Branch("lepton1GrMotherPID",&lep1_grmother,"lep1_grmother/I");
+  tree->Branch("lepton2GrMotherPID",&lep2_grmother,"lep2_grmother/I");
+  tree->Branch("bottom1MotherPID",&bot1_mother,"bot1_mother/I");
+  tree->Branch("bottom2MotherPID",&bot2_mother,"bot2_mother/I");
+  tree->Branch("bottom1GrMotherPID",&bot1_grmother,"bot1_grmother/I");
+  tree->Branch("bottom2GrMotherPID",&bot2_grmother,"bot2_grmother/I");
 }
 
 void doubleHiggsAnalyser::SetOutput(TString output_file_name) {
@@ -97,37 +108,103 @@ void doubleHiggsAnalyser::Initiate(TString output_file_name) {
 }
 
 void doubleHiggsAnalyser::ResetVariables() {
+  // MT2 variable
   lester_MT2 = -99;
+  lester_MT2_b = -99;
+  lester_MT2_l = -99;
   basic_MT2_332 = -99;
+  basic_MT2_332_b = -99;
+  basic_MT2_332_l = -99;
   ch_bisect_MT2_332 = -99;
+  ch_bisect_MT2_332_b = -99;
+  ch_bisect_MT2_332_l = -99;
+
+  // lepton kinematic variables
+  lepton_mass = -99;
+  lepton_px = -99;
+  lepton_py = -99;
+  lepton_deltaR = -99;
+  lepton1_mass = -99;
+  lepton2_mass = -99;
   lepton1_pt = -99;
   lepton2_pt = -99;
+
+  // bottom kinematic variables
+  bottom_mass = -99;
+  bottom_px = -99;
+  bottom_py = -99;
+  bottom_deltaR = -99;
+  bottom1_mass = -99;
+  bottom2_mass = -99;
+  bottom1_pt = -99;
+  bottom2_pt = -99;
+
+  // missing et
   missing_et = -99;
-  mt = -99;
-  muon1_mass = -99;
-  muon2_mass = -99;
-  muon_mass = -99;
-  muon_px = -99;
-  center_of_mass_ll = -99;
-  fromHiggs = 0;
-  fromTop = 0;
-  fromZ = 0;
-  from1 = 0;
-  from2 = 0;
-  muons.clear();
+
+  // truth matching variables 
+  
+  // lepton and bottom maps
+  leptons.clear();
   bottoms.clear();
 }
 
 bool doubleHiggsAnalyser::Analysis() {
-  //map<Float_t, int, greater<Float_t>> muons : map of <pt,index>:<K,V> of muon sorted by pt.
+  //map<Float_t, int, greater<Float_t>> leptons : map of <pt,index>:<K,V> of muon sorted by pt.
   //base selections : MissingET > 20, pT(lepton) > 20, deltaR(ll) < 1.0, m(ll) < 65, deltaR(bb) < 1.3, 95 < m(bb) < 140
     
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
-    if (m->MET<20) return false;
+    //if (m->MET<20) return false; // base cut 1
     missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
     missing_et = m->MET;
- 
+    
+    // leptons (muons)
+    for (int ip = 0; ip < particles->GetEntries(); ip++){
+      auto p = static_cast<const GenParticle *>(particles->At(ip));
+      //if (abs(p->PID)!=doubleHiggsAnalyser::Muon_PID 
+      //    || p->PT<20  // base cut 2
+      //    || fabs(p->Eta)>2.5 || p->M1==-1) continue;
+      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID && abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue; // check if the particle is lepton
+    if (fabs(p->Eta)>2.5 || p->M1==-1) continue; // check the lepton's Eta and pT.
+    //if (p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue; // check the lepton's Eta and pT.
+      leptons.insert(make_pair(p->PT,ip));
+    }
+  
+    if (leptons.size()<2) {
+      return false;
+    }
+    
+    lepton_iter = leptons.begin();
+    auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
+    lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
+    ++lepton_iter;
+    auto lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
+    lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
+    auto leptonlepton = lepton1+lepton2;
+    //if (leptonlepton.M() > 65 // base cut 4
+    //    || fabs(lepton1.DeltaR(lepton2)) > 1 // base cut 3
+    //    ) {
+    //    return false;
+    //}
+    auto lepton1_m = getMother(particles, lep1);
+    lep1_mother = abs(lepton1_m->PID);
+    auto lepton1_grm = getMother(particles, lepton1_m);
+    lep1_grmother = abs(lepton1_grm->PID);
+    auto lepton2_m = getMother(particles, lep1);
+    lep2_mother = abs(lepton1_m->PID);
+    auto lepton2_grm = getMother(particles, lepton2_m);
+    lep2_grmother = abs(lepton2_grm->PID);
+    lepton_mass = leptonlepton.M();
+    lepton_pt = leptonlepton.Pt();
+    lepton_px = leptonlepton.Px();
+    lepton_py = leptonlepton.Py();
+    lepton_deltaR = fabs(lepton1.DeltaR(lepton2));
+    lepton1_mass = lepton1.M();
+    lepton2_mass = lepton2.M();
+    lepton1_pt = lepton1.Pt();
+    lepton2_pt = lepton2.Pt();
+     
     // b jets
     for (int ij = 0; ij < jets->GetEntries(); ij++){
       auto jet = static_cast<const Jet *>(jets->At(ij));
@@ -139,69 +216,42 @@ bool doubleHiggsAnalyser::Analysis() {
       return false;
     }
 
-
     bottom_iter = bottoms.begin();
-    
     auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
-    bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass); 
+    bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass);
     bottom_iter ++;
-    
     auto bot2 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
     bottombottom = bottom1+bottom2;
     
-    if (bottombottom.M()<95 || bottombottom.M()>140 || fabs(bottom1.DeltaR(bottom2))>1.3) {
-        return false;
-    }
-    
-    // leptons (muons)
-    for (int ip = 0; ip < particles->GetEntries(); ip++){
-      auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
-      //if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID || abs(p->PID)!=doubleHiggsAnalyser::Electron_PID || abs(p->PID)!=doubleHiggsAnalyser::Muon_PID || p->PT<20 || fabs(p->Eta)>2.5 || p->M1==-1) continue;
-      muons.insert(make_pair(p->PT,ip));
-    }
-  
-    if (muons.size()<2) {
-      return false;
-    }
-    
-    muon_iter = muons.begin();
-    
-    auto mu1 = static_cast<const GenParticle *>(particles->At(muon_iter->second));
-    int from1 = isFrom(particles, muon_iter->second);
-    from1 = abs(from1);
-    if (from1==doubleHiggsAnalyser::Higgs_PID) fromHiggs++;
-    if (from1==doubleHiggsAnalyser::Top_PID) fromTop++;
-    if (from1==doubleHiggsAnalyser::Z_PID) fromZ++;
-    muon1.SetPtEtaPhiM(mu1->PT,mu1->Eta,mu1->Phi,mu1->Mass);
-    muon1_mass = muon1.M();
-    ++muon_iter;
-    auto mu2 = static_cast<const GenParticle *>(particles->At(muon_iter->second));
-    int from2 = isFrom(particles, muon_iter->second);
-    from2 = abs(from2);
-    if (from2==doubleHiggsAnalyser::Higgs_PID) fromHiggs++;
-    if (from2==doubleHiggsAnalyser::Top_PID) fromTop++;
-    if (from2==doubleHiggsAnalyser::Z_PID) fromZ++;
-    muon2.SetPtEtaPhiM(mu2->PT,mu2->Eta,mu2->Phi,mu2->Mass);
-    muon2_mass = muon2.M();
-    
-    lepton1_pt = mu1->PT;
-    lepton2_pt = mu2->PT;
-    
-    auto muonmuon = muon1+muon2;
-    if (muonmuon.M() > 65 || fabs(muon1.DeltaR(muon2)) > 1) {
-        return false;
-    }
-    mt = muonmuon.Mt();
-    center_of_mass_ll = sqrt(muonmuon.E());
+    int* bottom1_pdg = isFrom(particles, lepton_iter->second);
+    bot1_mother = abs(bottom1_pdg[0]);
+    bot1_grmother = abs(bottom1_pdg[1]);
+    int* bottom2_pdg = isFrom(particles, lepton_iter->second);
+    bot2_mother = abs(bottom2_pdg[0]);
+    bot2_grmother = abs(bottom2_pdg[1]);
+    bottom_mass = bottombottom.M();
+    bottom_pt = bottombottom.Pt();
+    bottom_px = bottombottom.Px();
+    bottom_py = bottombottom.Py();
+    bottom_deltaR = fabs(bottom1.DeltaR(bottom2));
+    bottom1_mass = bottom1.M();
+    bottom2_mass = bottom2.M();
+    bottom1_pt = bottom1.Pt();
+    bottom2_pt = bottom2.Pt();
+    //if (( bottombottom.M()<95 || bottombottom.M()>140 )// base cut 6
+    //    || fabs(bottom1.DeltaR(bottom2))>1.3 // base cut 5
+    //    ) {
+    //    return false;
+    //}
+   
     // MT2
-    Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(muonmuon.Px(), muonmuon.Py()), muonmuon.M());
+    Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(leptonlepton.Px(), leptonlepton.Py()), leptonlepton.M());
     Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(bottombottom.Px(), bottombottom.Py()), bottombottom.M());
     Mt2::TwoVector pT_Miss(missing.Px(), missing.Py());
     
     lester_MT2 = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-              muonmuon.M(),muonmuon.Px(),muonmuon.Py(),
+              leptonlepton.M(),leptonlepton.Px(),leptonlepton.Py(),
               bottombottom.M(),bottombottom.Px(),bottombottom.Px(),
               missing.Px(),missing.Py(),
               missing.M(),missing.M());
@@ -210,28 +260,28 @@ bool doubleHiggsAnalyser::Analysis() {
     // MT2(b)
     Mt2::LorentzTransverseVector vis_A_b(Mt2::TwoVector(bottom1.Px(), bottom1.Py()), bottom1.M());
     Mt2::LorentzTransverseVector vis_B_b(Mt2::TwoVector(bottom2.Px(), bottom2.Py()), bottom2.M());
-    Mt2::TwoVector pT_Miss_b(muonmuon.Px(), muonmuon.Py());
+    Mt2::TwoVector pT_Miss_b(leptonlepton.Px(), leptonlepton.Py());
     
     lester_MT2_b = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
               bottom1.M(),bottom1.Px(),bottom1.Py(),
               bottom2.M(),bottom2.Px(),bottom2.Px(),
-              muonmuon.Px(),muonmuon.Py(),
-              muonmuon.M(),muonmuon.M());
-    basic_MT2_332_b = basic_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, muonmuon.M());
-    ch_bisect_MT2_332_b = ch_bisect_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, muonmuon.M());
+              leptonlepton.Px(),leptonlepton.Py(),
+              leptonlepton.M(),leptonlepton.M());
+    basic_MT2_332_b = basic_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, leptonlepton.M());
+    ch_bisect_MT2_332_b = ch_bisect_mt2_332Calculator.mt2_332(vis_A_b, vis_B_b, pT_Miss_b, leptonlepton.M());
     // MT2(l)
-    Mt2::LorentzTransverseVector vis_A_l(Mt2::TwoVector(muon1.Px(), muon1.Py()), muon1.M());
-    Mt2::LorentzTransverseVector vis_B_l(Mt2::TwoVector(muon2.Px(), muon2.Py()), muon2.M());
+    Mt2::LorentzTransverseVector vis_A_l(Mt2::TwoVector(lepton1.Px(), lepton1.Py()), lepton1.M());
+    Mt2::LorentzTransverseVector vis_B_l(Mt2::TwoVector(lepton2.Px(), lepton2.Py()), lepton2.M());
     Mt2::TwoVector pT_Miss_l(missing.Px(), missing.Py());
     lester_MT2_l = asymm_mt2_lester_bisect::get_mT2( // the simpliest way to calculate MT2
-              muon1.M(),muon1.Px(),muon1.Py(),
-              muon2.M(),muon2.Px(),muon2.Px(),
+              lepton1.M(),lepton1.Px(),lepton1.Py(),
+              lepton2.M(),lepton2.Px(),lepton2.Px(),
               missing.Px(),missing.Py(),
               missing.M(),missing.M());
     basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     //if (ch_bisect_MT2_332 < 0.1) return false;
-    if (basic_MT2_332==-99) return false;
+    //if (basic_MT2_332==-99) return false;
   
   return true;
 }
@@ -256,27 +306,26 @@ void doubleHiggsAnalyser::Finalize() {
   out_file->Close();
 }
 
-int main(Int_t argc, Char_t** argv)
+int main(Int_t argc,Char_t** argv)
 {
-    //TFile *f = TFile::Open("/cms/scratch/jlee/hh/hh_1.root");
-    //TTree *tree;
-    //f->GetObject("Delphes", tree);
-    TChain *tree = new TChain("Delphes");
-
-    //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
-    //tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
-    tree->Add("/xrootd/store/user/seyang/Data/TopTagging/TT/*.root"); // ui
-
-    tree->SetBranchStatus("*",true);
+  //TFile *f = TFile::Open("/cms/scratch/jlee/hh/hh_1.root");
+  //TTree *tree;
+  //f->GetObject("Delphes", tree);
+  TChain *tree = new TChain("Delphes");
+  TString output_name;
+  //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
+  //tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
+  for (int i = 1; i<50; i++){
+  std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
+  tree->Add(filename.c_str());
+  }
+  output_name = "TT_50.root";
     
-    // for delphes format analysis
-    doubleHiggsAnalyser ana(tree, true);
-    // for nanoAOD format analysis
-    // double HiggsAnalyser ana(tree, true);
-    ana.Initiate("test.root"); // usage : Initiate("outputfilename.root")
-    ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
-    ana.Finalize(); // Write the tree and Close the file.
-
+  tree->SetBranchStatus("*",true);
+    
+  doubleHiggsAnalyser ana(tree, true);
+  ana.Initiate(output_name); // usage : Initiate("outputfilename.root")
+  ana.Loop(); // Loop through the events and do doubleHIggsAnalyser::Analysis() per event.
+  ana.Finalize(); // Write the tree and Close the file.
   return 0;
 }
-
