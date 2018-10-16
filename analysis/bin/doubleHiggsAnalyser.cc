@@ -74,6 +74,8 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("bottom1_pt",&bottom1_pt,"bottom1_pt/F");
   tree->Branch("bottom2_pt",&bottom2_pt,"bottom2_pt/F");
   tree->Branch("missing_et",&missing_et,"missing_et/F");
+  // invariant mass of bbll
+  tree->Branch("bbll_mass",&bbll_mass,"bbll_mass/F");
 
   // truth matching variables
   tree->Branch("lepton1MotherPID",&lep1_mother,"lep1_mother/I");
@@ -155,7 +157,7 @@ void doubleHiggsAnalyser::ResetVariables() {
   bot1_grmother = 0;
   bot2_grmother = 0;
 
-  // for the cut flow
+  // cut flow
   step = 0;
   
   // lepton and bottom maps
@@ -169,18 +171,17 @@ bool doubleHiggsAnalyser::Analysis() {
     
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
-    if (m->MET<20) {return true;} step++;// base cut 1
-    missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
+    missing.SetPtEtaPhiM(m->MET,m->Eta,m->Phi,0);
     missing_et = m->MET;
     
-    // leptons (muons)
+    // collet leptons
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID && abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue; // check if the particle is lepton
-    if (fabs(p->Eta)>2.5 || p->M1==-1) continue; // check the lepton's Eta and pT.
+      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID && abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
+      if (fabs(p->Eta) > 2.5 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,ip));
     }
-  
+
     if (leptons.size()<2) {
       return false;
     }
@@ -188,18 +189,17 @@ bool doubleHiggsAnalyser::Analysis() {
     lepton_iter = leptons.begin();
     auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
+    int* lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
+    lep1_mother = abs(lepton1_pdg[0]);
+    lep1_grmother = abs(lepton1_pdg[1]);
     ++lepton_iter;
     auto lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
+    int* lepton2_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
+    lep2_mother = abs(lepton2_pdg[0]);
+    lep2_grmother = abs(lepton2_pdg[1]);
     auto leptonlepton = lepton1+lepton2;
-    auto lepton1_m = getMother(particles, lep1);
-    lep1_mother = abs(lepton1_m->PID);
-    auto lepton1_grm = getMother(particles, lepton1_m);
-    lep1_grmother = abs(lepton1_grm->PID);
-    auto lepton2_m = getMother(particles, lep1);
-    lep2_mother = abs(lepton1_m->PID);
-    auto lepton2_grm = getMother(particles, lepton2_m);
-    lep2_grmother = abs(lepton2_grm->PID);
+    // lepton kinematic variables
     lepton_mass = leptonlepton.M();
     lepton_pt = leptonlepton.Pt();
     lepton_px = leptonlepton.Px();
@@ -209,35 +209,31 @@ bool doubleHiggsAnalyser::Analysis() {
     lepton2_mass = lepton2.M();
     lepton1_pt = lepton1.Pt();
     lepton2_pt = lepton2.Pt();
-    if (lepton1_pt<20 && lepton2_pt<20) {return true;} step++; // base cut 2
-    if (lepton_deltaR > 1) {return true;} step++; // base cut 3
-    if (lepton_mass > 65) {return true;} step++; // base cut 4
      
-    // b jets
+    // collect b jets
     for (int ij = 0; ij < jets->GetEntries(); ij++){
       auto jet = static_cast<const Jet *>(jets->At(ij));
-      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID) continue;
+      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID || fabs(jet->PT) < 30) continue;
       bottoms.insert(make_pair(jet->PT,ij));
     }
    
     if (bottoms.size()<2) {
       return false;
     }
-
     bottom_iter = bottoms.begin();
     auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass);
+    //int* bottom1_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
+    //bot1_mother = abs(bottom1_pdg[0]);
+    //bot1_grmother = abs(bottom1_pdg[1]);
     bottom_iter ++;
     auto bot2 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
     bottombottom = bottom1+bottom2;
-    
-    int* bottom1_pdg = isFrom(particles, lepton_iter->second);
-    bot1_mother = abs(bottom1_pdg[0]);
-    bot1_grmother = abs(bottom1_pdg[1]);
-    int* bottom2_pdg = isFrom(particles, lepton_iter->second);
-    bot2_mother = abs(bottom2_pdg[0]);
-    bot2_grmother = abs(bottom2_pdg[1]);
+    //int* bottom2_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
+    //bot2_mother = abs(bottom2_pdg[0]);
+    //bot2_grmother = abs(bottom2_pdg[1]);
+    // bottom kinematic variables
     bottom_mass = bottombottom.M();
     bottom_pt = bottombottom.Pt();
     bottom_px = bottombottom.Px();
@@ -247,9 +243,20 @@ bool doubleHiggsAnalyser::Analysis() {
     bottom2_mass = bottom2.M();
     bottom1_pt = bottom1.Pt();
     bottom2_pt = bottom2.Pt();
-    if (bottom_deltaR > 1.3) {return true;} step++; // base cut 5
-    if (bottom_mass < 95 || bottom_mass > 140) {return true;} step++; // base cut 6
-   
+
+    // invariant mass of bbll
+    bbll = bottombottom + leptonlepton;
+    bbll_mass = bbll.M();
+
+    // missing_et baseline selection
+    if (missing_et<20) {return true;} step++; // base cut 1
+    // lepton baseline selections
+    if (lepton_deltaR > 1) {return true;} step++; // base cut 2
+    if (lepton_mass > 65) {return true;} step++; // base cut 3
+    // bottom baseline selections
+    if (bottom_deltaR > 1.3) {return true;} step++; // base cut 4
+    if (bottom_mass < 95 || bottom_mass > 140) {return true;} step++; // base cut 5
+
     // MT2
     Mt2::LorentzTransverseVector vis_A(Mt2::TwoVector(leptonlepton.Px(), leptonlepton.Py()), leptonlepton.M());
     Mt2::LorentzTransverseVector vis_B(Mt2::TwoVector(bottombottom.Px(), bottombottom.Py()), bottombottom.M());
@@ -285,10 +292,8 @@ bool doubleHiggsAnalyser::Analysis() {
               missing.M(),missing.M());
     basic_MT2_332_l = basic_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
     ch_bisect_MT2_332_l = ch_bisect_mt2_332Calculator.mt2_332(vis_A_l, vis_B_l, pT_Miss_l, missing.M());
-    //if (ch_bisect_MT2_332 < 0.1) return false;
-    //if (basic_MT2_332==-99) return false;
-  
-  return true;
+
+    return true;
 }
 
 void doubleHiggsAnalyser::Loop() {
@@ -296,12 +301,20 @@ void doubleHiggsAnalyser::Loop() {
   bool keep = false;
   t = del_tree;
   int nevent = 0;
-  for (int iev = 0; iev < t->GetEntries(); iev++) {
+  int proc = 0; int temp = 0;
+  int tot_events = t->GetEntries();
+  for (int iev = 0; iev < tot_events; iev++) {
     t->GetEntry(iev);
     keep = doubleHiggsAnalyser::Analysis();
     if (keep) out_tree->Fill();
     doubleHiggsAnalyser::ResetVariables();
-    nevent ++;
+    nevent ++; temp = nevent*100/tot_events;
+    if ( temp != proc ){
+        proc ++;
+        cout << "###############################" << endl;
+        cout << " proceeding : " << proc << " %" << endl;
+        cout << "###############################" << endl;
+    }
   }
   cout << "n_events are " << nevent << endl;
 }
@@ -320,11 +333,12 @@ int main(Int_t argc,Char_t** argv)
   TString output_name;
   //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
   tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
-  //for (int i = 1; i<50; i++){
+  //for (int i = 1; i<200; i++){
   //std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
   //tree->Add(filename.c_str());
   //}
-  output_name = "hh_7.root";
+  output_name = "HH_7.root";
+  //output_name = "TT_200.root";
     
   tree->SetBranchStatus("*",true);
     

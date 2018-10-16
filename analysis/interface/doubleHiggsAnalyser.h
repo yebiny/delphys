@@ -41,6 +41,8 @@ private :
   Float_t bottom2_mass = -99;
   Float_t bottom1_pt = -99;
   Float_t bottom2_pt = -99;
+  //// invariant mass of bbll
+  Float_t bbll_mass = -99;
   //// missing et
   Float_t missing_et = -99;
   //// truth matching variables
@@ -62,6 +64,7 @@ private :
   TLorentzVector bottom1;
   TLorentzVector bottom2;
   TLorentzVector bottombottom;
+  TLorentzVector bbll;
   TLorentzVector missing;
 
   // Delphes Variables
