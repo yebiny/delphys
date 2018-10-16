@@ -1,21 +1,13 @@
 # delphys
 
-============================
-
-## How to create or update BuildFile.xml
-```
-cd analysis/test
-./makeBuildFile --d=/path/to/Delphes
-```
-=======
-
 ## How to git clone
 ```
-scram p -n delphys CMSSW CMSSW_9_4_4
-cd delphys/src
+scram p -n delPhys CMSSW CMSSW_9_4_4
+cd delPhys/src
 cmsenv
 git clone git@github.com:"your_user_name"/nano.git #"your_user_name" should be replaced by real user name
 scram b -j 20
+getFiles
 ```
 ## Download and untar delphes
 ```
