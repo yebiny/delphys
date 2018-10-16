@@ -31,14 +31,14 @@ GenParticle* getMother(TClonesArray* particles, const GenParticle* p){
 }
 
 // return the PID of the mother particle of the particle at 'ip' among 'particles'
-int* isFrom(TClonesArray* particles, int ip){
+std::pair<int,int> isFrom(TClonesArray* particles, int ip){
    auto p = static_cast<GenParticle *>(particles->At(ip));
    // check if it's from Higgs
    auto mom = getMother(particles, p); 
    if (mom==nullptr) return 0;
    auto grmom = getMother(particles, mom);
    if (grmom==nullptr) return 0;
-   static int pedigree[2] = {mom->PID, grmom->PID};
+   auto pedigree = std::make_pair(mom->PID, grmom->PID);
    return pedigree;
 }
 
@@ -189,15 +189,15 @@ bool doubleHiggsAnalyser::Analysis() {
     lepton_iter = leptons.begin();
     auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
-    int* lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
-    lep1_mother = abs(lepton1_pdg[0]);
-    lep1_grmother = abs(lepton1_pdg[1]);
+    auto lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
+    lep1_mother = abs(lepton1_pdg.first);
+    lep1_grmother = abs(lepton1_pdg.second);
     ++lepton_iter;
     auto lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
-    int* lepton2_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
-    lep2_mother = abs(lepton2_pdg[0]);
-    lep2_grmother = abs(lepton2_pdg[1]);
+    auto lepton2_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
+    lep2_mother = abs(lepton2_pdg.first);
+    lep2_grmother = abs(lepton2_pdg.second);
     auto leptonlepton = lepton1+lepton2;
     // lepton kinematic variables
     lepton_mass = leptonlepton.M();
@@ -223,16 +223,16 @@ bool doubleHiggsAnalyser::Analysis() {
     bottom_iter = bottoms.begin();
     auto bot1 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom1.SetPtEtaPhiM(bot1->PT,bot1->Eta,bot1->Phi,bot1->Mass);
-    //int* bottom1_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
-    //bot1_mother = abs(bottom1_pdg[0]);
-    //bot1_grmother = abs(bottom1_pdg[1]);
+    //auto bottom1_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
+    //bot1_mother = abs(bottom1_pdg.first);
+    //bot1_grmother = abs(bottom1_pdg.second);
     bottom_iter ++;
     auto bot2 = static_cast<const Jet *>(jets->At(bottom_iter->second));
     bottom2.SetPtEtaPhiM(bot2->PT,bot2->Eta,bot2->Phi,bot2->Mass);
     bottombottom = bottom1+bottom2;
-    //int* bottom2_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
-    //bot2_mother = abs(bottom2_pdg[0]);
-    //bot2_grmother = abs(bottom2_pdg[1]);
+    //auto bottom2_pdg = isFrom(particles, bottom_iter->second); // bottom truth matching
+    //bot2_mother = abs(bottom2_pdg.first);
+    //bot2_grmother = abs(bottom2_pdg.second);
     // bottom kinematic variables
     bottom_mass = bottombottom.M();
     bottom_pt = bottombottom.Pt();
