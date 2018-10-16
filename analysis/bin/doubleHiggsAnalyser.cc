@@ -35,9 +35,9 @@ std::pair<int,int> isFrom(TClonesArray* particles, int ip){
    auto p = static_cast<GenParticle *>(particles->At(ip));
    // check if it's from Higgs
    auto mom = getMother(particles, p); 
-   if (mom==nullptr) return 0;
+   if (mom==nullptr) return std::make_pair(0,0);
    auto grmom = getMother(particles, mom);
-   if (grmom==nullptr) return 0;
+   if (grmom==nullptr) return std::make_pair(0,0);
    auto pedigree = std::make_pair(mom->PID, grmom->PID);
    return pedigree;
 }
