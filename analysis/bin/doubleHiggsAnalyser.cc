@@ -171,7 +171,7 @@ bool doubleHiggsAnalyser::Analysis() {
     
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
-    missing.SetPtEtaPhiM(m->MET,m->Eta,m->Phi,0);
+    missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
     missing_et = m->MET;
     
     // collet leptons
@@ -332,13 +332,13 @@ int main(Int_t argc,Char_t** argv)
   TChain *tree = new TChain("Delphes");
   TString output_name;
   //tree->Add("/home/scratch/sunyoung/data/nanoAOD/hh/*.root"); // gate
-  tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
-  //for (int i = 1; i<200; i++){
-  //std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
-  //tree->Add(filename.c_str());
-  //}
-  output_name = "HH_7.root";
-  //output_name = "TT_200.root";
+  //tree->Add("/cms/scratch/jlee/hh/*.root"); // ui
+  for (int i = 1; i<200; i++){
+  std::string filename = "/xrootd/store/user/seyang/Data/TopTagging/TT/TT_"+std::to_string(i)+".root";
+  tree->Add(filename.c_str());
+  }
+  //output_name = "HH_7.root";
+  output_name = "TT_200.root";
     
   tree->SetBranchStatus("*",true);
     
