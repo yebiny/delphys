@@ -185,7 +185,7 @@ bool doubleHiggsAnalyser::Analysis() {
       auto p = static_cast<const GenParticle *>(particles->At(ip));
       // if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID)
       if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
-      if (fabs(p->Eta) > 2.5 || fabs(p->PT) < 20) continue;
+      if (fabs(p->Eta) > 2.4 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,ip));
     }
 
@@ -193,19 +193,33 @@ bool doubleHiggsAnalyser::Analysis() {
       return false;
     }
     
+    float lepton1_pt, lepton2_pt;
     lepton_iter = leptons.begin();
+    lepton1_pt = lepton_iter->first;
     auto lep1 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
     lepton1.SetPtEtaPhiM(lep1->PT,lep1->Eta,lep1->Phi,lep1->Mass);
     auto lepton1_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
     lep1_mother = abs(lepton1_pdg.first);
     lep1_grmother = abs(lepton1_pdg.second);
+    int charge1 = lep1->Charge;
     ++lepton_iter;
+    lepton2_pt = lepton_iter->first;
     auto lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
+    int charge2 = lep2->Charge;
+    while ( charge1==charge2 && lepton_iter!=leptons.end() ) {
+      lepton_iter++;
+      lep2 = static_cast<const GenParticle *>(particles->At(lepton_iter->second));
+      charge2 = lep2->Charge;
+    }
+    if ( charge1==charge2 ) return false;
     lepton2.SetPtEtaPhiM(lep2->PT,lep2->Eta,lep2->Phi,lep2->Mass);
     auto lepton2_pdg = isFrom(particles, lepton_iter->second); // lepton truth matching
     lep2_mother = abs(lepton2_pdg.first);
     lep2_grmother = abs(lepton2_pdg.second);
     auto leptonlepton = lepton1+lepton2;
+    if (lepton1_pt == lepton2_pt) {
+      cout << "two leptons have same pt" << endl;
+    }
     // lepton kinematic variables
     lepton_mass = leptonlepton.M();
     lepton_pt = leptonlepton.Pt();
