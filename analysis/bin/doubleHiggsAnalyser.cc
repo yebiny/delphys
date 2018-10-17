@@ -57,6 +57,7 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("ch_bisect_MT2_332_l",&ch_bisect_MT2_332_l,"ch_bisect_MT2_332_l/F");
   // lepton kinematic variables
   tree->Branch("lepton_mass",&lepton_mass,"lepton_mass/F");
+  tree->Branch("lepton_pt",&lepton_pt,"lepton_pt/F");
   tree->Branch("lepton_px",&lepton_px,"lepton_px/F");
   tree->Branch("lepton_py",&lepton_py,"lepton_py/F");
   tree->Branch("lepton_deltaR",&lepton_deltaR,"lepton_deltaR/F");
@@ -66,6 +67,7 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("lepton2_pt",&lepton2_pt,"lepton1_pt/F");
   // bottom kinematic variables
   tree->Branch("bottom_mass",&bottom_mass,"bottom_mass/F");
+  tree->Branch("bottom_pt",&bottom_pt,"bottom_pt/F");
   tree->Branch("bottom_px",&bottom_px,"bottom_px/F");
   tree->Branch("bottom_py",&bottom_py,"bottom_py/F");
   tree->Branch("bottom_deltaR",&bottom_deltaR,"bottom_deltaR/F");
@@ -73,7 +75,9 @@ void doubleHiggsAnalyser::MakeOutputBranch(TTree *tree) {
   tree->Branch("bottom2_mass",&bottom2_mass,"bottom/F");
   tree->Branch("bottom1_pt",&bottom1_pt,"bottom1_pt/F");
   tree->Branch("bottom2_pt",&bottom2_pt,"bottom2_pt/F");
+  // missing et
   tree->Branch("missing_et",&missing_et,"missing_et/F");
+  tree->Branch("missing_et_phi",&missing_et_phi,"missing_et_phi/F");
   // invariant mass of bbll
   tree->Branch("bbll_mass",&bbll_mass,"bbll_mass/F");
 
@@ -146,6 +150,7 @@ void doubleHiggsAnalyser::ResetVariables() {
 
   // missing et
   missing_et = -99;
+  missing_et_phi = -99;
 
   // truth matching variables 
   lep1_mother = 0;
@@ -171,13 +176,15 @@ bool doubleHiggsAnalyser::Analysis() {
     
     // Missing ET
     auto m = static_cast<const MissingET *>(missings->At(0)); // There is always one MET object.
-    missing.SetPtEtaPhiM(m->MET,0,m->Phi,0);
     missing_et = m->MET;
+    missing_et_phi = m->Phi;
+    missing.SetPtEtaPhiM(missing_et,0,missing_et_phi,0);
     
     // collet leptons
     for (int ip = 0; ip < particles->GetEntries(); ip++){
       auto p = static_cast<const GenParticle *>(particles->At(ip));
-      if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID && abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
+      // if (abs(p->PID)!=doubleHiggsAnalyser::Tau_PID)
+      if (abs(p->PID)!=doubleHiggsAnalyser::Electron_PID && abs(p->PID)!=doubleHiggsAnalyser::Muon_PID) continue;
       if (fabs(p->Eta) > 2.5 || fabs(p->PT) < 20) continue;
       leptons.insert(make_pair(p->PT,ip));
     }
@@ -213,7 +220,7 @@ bool doubleHiggsAnalyser::Analysis() {
     // collect b jets
     for (int ij = 0; ij < jets->GetEntries(); ij++){
       auto jet = static_cast<const Jet *>(jets->At(ij));
-      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID || fabs(jet->PT) < 30) continue;
+      if (abs(jet->Flavor) != doubleHiggsAnalyser::Bottom_PID || fabs(jet->PT) < 30 || fabs(jet->Eta) > 2.4) continue;
       bottoms.insert(make_pair(jet->PT,ij));
     }
    
