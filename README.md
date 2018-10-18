@@ -5,7 +5,7 @@
 scram p -n delPhys CMSSW CMSSW_9_4_4
 cd delPhys/src
 cmsenv
-git clone git@github.com:"your_user_name"/nano.git #"your_user_name" should be replaced by real user name
+git clone git@github.com:"your_user_name"/delphys.git #"your_user_name" should be replaced by real user name
 scram b -j 20
 getFiles
 ```
