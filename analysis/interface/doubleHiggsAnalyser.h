@@ -15,37 +15,26 @@ private :
   Float_t lester_MT2 = -99;
   Float_t lester_MT2_b = -99;
   Float_t lester_MT2_l = -99;
-  Float_t basic_MT2_332 = -99;
+  Float_t basic_MT2_332_bbll = -99;
   Float_t basic_MT2_332_b = -99;
   Float_t basic_MT2_332_l = -99;
+  Float_t basic_MT2_332_blbl = -99;
   Float_t ch_bisect_MT2_332 = -99;
   Float_t ch_bisect_MT2_332_b = -99;
   Float_t ch_bisect_MT2_332_l = -99;
+  //// mT = sqrt(2*pt(ll)*MET*[1-cos(phi(ll)-phi(MET))])
+  Float_t mT = -99;
   //// lepton kinematic variables
-  Float_t lepton_mass = -99;
-  Float_t lepton_pt = -99;
-  Float_t lepton_px = -99;
-  Float_t lepton_py = -99;
-  Float_t lepton_deltaR = -99;
-  Float_t lepton1_mass = -99;
-  Float_t lepton2_mass = -99;
-  Float_t lepton1_pt = -99;
-  Float_t lepton2_pt = -99;
+  Float_t ll_deltaR = -99;
+  Float_t ll_deltaPhi = -99;
   //// bottom kinematic variables
-  Float_t bottom_mass = -99;
-  Float_t bottom_pt = -99;
-  Float_t bottom_px = -99;
-  Float_t bottom_py = -99;
-  Float_t bottom_deltaR = -99;
-  Float_t bottom1_mass = -99;
-  Float_t bottom2_mass = -99;
-  Float_t bottom1_pt = -99;
-  Float_t bottom2_pt = -99;
-  //// invariant mass of bbll
-  Float_t bbll_mass = -99;
-  //// missing et
-  Float_t missing_et = -99;
-  Float_t missing_et_phi = -99;
+  Float_t bb_deltaR = -99;
+  Float_t bb_deltaPhi = -99;
+  //// lepton and bottom kinematic variables
+  std::vector<Float_t> bl_deltaR;
+  Float_t bl_min_deltaR = -99;
+  Float_t bbll_deltaR = -99;
+  Float_t bbll_deltaPhi = -99;
   //// truth matching variables
   Int_t lep1_mother = 0;
   Int_t lep2_mother = 0;
@@ -65,15 +54,19 @@ private :
   TLorentzVector bottom1;
   TLorentzVector bottom2;
   TLorentzVector bottombottom;
+  TLorentzVector bottomlepton1;
+  TLorentzVector bottomlepton2;
   TLorentzVector bbll;
   TLorentzVector missing;
 
   // Delphes Variables
   TClonesArray *particles = 0;
+  TClonesArray *muons = 0;
+  TClonesArray *electrons = 0;
   TClonesArray *missings = 0;
   TClonesArray *jets = 0;
-  std::map<Float_t, int, std::greater<Float_t>> leptons;
-  std::map<Float_t, int, std::greater<Float_t>>::iterator lepton_iter;
+  std::map<Float_t, std::pair<int,int>, std::greater<Float_t>> leptons;
+  std::map<Float_t, std::pair<int,int>, std::greater<Float_t>>::iterator lepton_iter;
   std::map<Float_t, int, std::greater<Float_t>> bottoms;
   std::map<Float_t, int, std::greater<Float_t>>::iterator bottom_iter;
 
@@ -88,9 +81,11 @@ public :
   static const int Higgs_PID = 25;
   static const int Top_PID = 6;
   static const int Bottom_PID = 5;
-  static const int Muon_PID = 13;
-  static const int Tau_PID = 17;
   static const int Electron_PID = 11;
+  static const int Muon_PID = 13;
+  static const int Tau_PID = 15;
+  static constexpr float Muon_Mass = 105.6583745; // MeV
+  static constexpr float Electron_Mass = 0.5109989461; // MeV
   // before loop settings
   void MakeOutputBranch(TTree *tree);
   void SetOutput(TString output_file_name);
