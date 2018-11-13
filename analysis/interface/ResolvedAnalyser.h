@@ -10,14 +10,14 @@ class ResolvedAnalyser : private BaseAnalyser {
                    const TString & out_path,
                    const TString & out_tree_name);
   ~ResolvedAnalyser();
-  void Loop() override;
+  void Loop();
 
  private:
   // inherited
-  void MakeBranch() override;
-  void Reset() override;
-  Bool_t SelectEvent() override;
-  void AnalyseEvent() override;
+  void MakeBranch();
+  void Reset();
+  Bool_t SelectEvent();
+  void AnalyseEvent();
 
   std::vector<const Jet*> SelectJet();
   std::vector<const Jet*> selected_jets_;
