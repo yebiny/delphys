@@ -13,9 +13,11 @@
 QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
                                const TString & out_path,
                                const TString & out_tree_name,
-                               Bool_t is_dijet) :
+                               Bool_t is_dijet,
+                               Bool_t label) : 
     BaseAnalyser(in_path, out_path, out_tree_name),
-    kIsDijet(is_dijet) {
+    kIsDijet(is_dijet),
+    m_label(label) {
 
   std::cout << "ctor begin" << std::endl;
 
@@ -75,6 +77,8 @@ void QGJetsAnalyser::MakeBranch() {
   BRANCH_I(num_good_jets)
   BRANCH_I(num_primary_vertices)
   BRANCH_I(order)
+
+  BRANCH_I(label);
 
   BRANCH_F(pt)
   BRANCH_F(eta)
@@ -136,6 +140,8 @@ void QGJetsAnalyser::ResetOnEachEvent() {
 
 
 void QGJetsAnalyser::ResetOnEachJet() {
+  // NOTE m_label do not need to be reset.
+
   m_pt = 0.0f;
   m_eta = 0.0f;
   m_phi = 0.0f;
@@ -582,7 +588,9 @@ int main(int argc, char* argv[]) {
 
   Bool_t is_dijet = in_path.Contains("qq") or in_path.Contains("gg");
 
-  QGJetsAnalyser analyser(in_path, out_path, "jetAnalyser", is_dijet);
+  Int_t label = (in_path.Contains("qq") or in_path.Contains("zq")) ? 1 : 0;
+
+  QGJetsAnalyser analyser(in_path, out_path, "jetAnalyser", is_dijet, label);
   analyser.Loop();
 
   return 0;

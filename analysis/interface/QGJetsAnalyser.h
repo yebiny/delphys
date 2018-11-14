@@ -40,6 +40,8 @@ class QGJetsAnalyser : private BaseAnalyser {
   Int_t m_num_primary_vertices;
   Int_t m_order;
 
+  Int_t m_label;
+
   Float_t m_pt; // jet pt
   Float_t m_eta; // jet eta
   Float_t m_phi; // jet phi
@@ -98,6 +100,7 @@ class QGJetsAnalyser : private BaseAnalyser {
 
   // Constants
   const Bool_t kIsDijet;
+  const Bool_t kIsQuarkJet;
 
   const Int_t kHardProcessPartonStatus = 23;
 
