@@ -14,10 +14,10 @@ QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
                                const TString & out_path,
                                const TString & out_tree_name,
                                Bool_t is_dijet,
-                               Bool_t label) : 
+                               Int_t label) : 
     BaseAnalyser(in_path, out_path, out_tree_name),
-    kIsDijet(is_dijet),
-    m_label(label) {
+    m_label(label),
+    kIsDijet(is_dijet) {
 
   std::cout << "ctor begin" << std::endl;
 
@@ -587,7 +587,6 @@ int main(int argc, char* argv[]) {
   TString out_path(argv[2]);
 
   Bool_t is_dijet = in_path.Contains("qq") or in_path.Contains("gg");
-
   Int_t label = (in_path.Contains("qq") or in_path.Contains("zq")) ? 1 : 0;
 
   QGJetsAnalyser analyser(in_path, out_path, "jetAnalyser", is_dijet, label);
