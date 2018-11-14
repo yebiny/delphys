@@ -10,7 +10,7 @@
 namespace delphys {
 
 
-template<typename Element>
+template<typename T>
 T ComputeDeltaR(T eta1, T eta2,
                 T phi1, T phi2) {
   T deta = eta1 - eta2;
