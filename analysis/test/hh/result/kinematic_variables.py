@@ -20,6 +20,7 @@ limit_list = { 'll_pt': { "bfc":[60,0,400], "afc":[60,0,400] },
                "bl_deltaR" : { "bfc":[50,0,5], "afc":[50,0,5] },
                "bl_min_deltaR" : { "bfc":[50,0,5], "afc":[50,0,5] },
                "mT" : { "bfc":[75,0,300], "afc":[75,0,300] },
+               "hig_top_2d" : { "bfc":[1000,-10,10], "afc":[1000,-10,10]}
               }
 def getHistogram(title,binning,lower_limit,upper_limit):
     return ROOT.TH1D(title,title,binning,lower_limit,upper_limit)
@@ -27,7 +28,12 @@ def getHistogram(title,binning,lower_limit,upper_limit):
 for key in ["bfc","afc"]:
     for key2 in ["hh","tt","hh_B6","hh_B11"]:
         for key3 in limit_list.keys():
-            hlist[key][key2][key3] = getHistogram(key2+" "+key+" "+key3.replace("_"," "),limit_list[key3][key][0],limit_list[key3][key][1],limit_list[key3][key][2])
+            if key3 is "hig_top_2d":
+                hlist[key][key2][key3] = ROOT.TH2F(key2+" "+key+" "+key3.replace("_"," "),key2+" "+key+" "+key3.replace("_"," "),limit_list[key3][key][0],limit_list[key3][key][1],limit_list[key3][key][2],limit_list[key3][key][0],limit_list[key3][key][1],limit_list[key3][key][2])
+            else:
+                hlist[key][key2][key3] = getHistogram(key2+" "+key+" "+key3.replace("_"," "),limit_list[key3][key][0],limit_list[key3][key][1],limit_list[key3][key][2])
+
+
 
 tt_c = ROOT.TChain("events")
 tt_c.Add("TT_200.root")
@@ -41,13 +47,15 @@ sample_list = {"tt":tt_c,"hh":hh_c,"hh_B6":hh_B6_c,"hh_B11":hh_B11_c}
 
 f = ROOT.TFile("plots.root","RECREATE")
 
-for sample in ["tt", "hh", "hh_B6", "hh_B11"]:
+#for sample in ["tt", "hh", "hh_B6", "hh_B11"]:
+for sample in ["tt", "hh"]:
     c = sample_list[sample]
     for ie, e in enumerate(c):
         cut = ""
-        if e.step<4:
-            cut = "bfc"
-        else: cut = "afc"
+        if e.step == 4 and e.tmva_bdtg_output > 0:
+            cut = "afc"
+        else: cut = "bfc"
+        hlist[cut][sample]['hig_top_2d'].Fill(e.higgsness, e.topness)
         hlist[cut][sample]['ll_pt'].Fill(e.ll.Pt())
         hlist[cut][sample]['bb_pt'].Fill(e.bb.Pt())
         hlist[cut][sample]["missing_et_phi"].Fill(e.MET.Phi())
@@ -70,8 +78,18 @@ for sample in ["tt", "hh", "hh_B6", "hh_B11"]:
         for bld in e.bl_deltaR:
             hlist[cut][sample]["bl_deltaR"].Fill(bld)
 
+num_bg = hlist["afc"]["tt"]["mT"].GetEntries()
+num_bg = num_bg * 26960510 / 1559547
+num_sg = hlist["afc"]["hh"]["mT"].GetEntries()
+num_sg = num_sg * 338 / 899997
+sensitivity = num_sg/math.sqrt(num_bg+num_sg)
+print "number of background : " + str(num_bg) + "\n"
+print "number of signal : " + str(num_sg) + "\n"
+print "sensitivity : " + str(sensitivity) + "\n"
+
 for key in ["bfc","afc"]:
-    for key2 in ["tt", "hh", "hh_B6", "hh_B11"]:
+    for key2 in ["tt", "hh"]:
+    #for key2 in ["tt", "hh", "hh_B6", "hh_B11"]:
         for key3 in hlist[key][key2].keys():
             #integ = hlist[key][key2][key3].Integral()
             #if integ == 0:
