@@ -227,8 +227,7 @@ void fcnT1(  int& npar, double* deriv, double& f, double par[], int flag) {
 
   chisq = deltaJLN111*deltaJLN111 + deltaJLN222*deltaJLN222 + deltaLN11on*deltaLN11on + deltaLN22on*deltaLN22on;
 
-    cout << nMuon << endl;
-chisq;
+  f = chisq;
 }
 
 void fcnT2(  int& npar, double* deriv, double& f, double par[], int flag) {

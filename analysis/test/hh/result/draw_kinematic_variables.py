@@ -23,6 +23,7 @@ order_list = { 'll_pt': { "bfc":[0,3,2,1], "afc":[0,2,3,1] },
                "bl_deltaR": { "bfc":[3,2,1,0], "afc":[3,2,1,0] },
                "bl_min_deltaR": { "bfc":[0,1,2,3], "afc":[0,2,3,1] },
                "mT": { "bfc":[3,2,1,0], "afc":[2,3,1,0] }
+               "hig_top_2d": { "bfc":[3,2,1,0], "afc":[2,3,1,0] }
               }
 color_list = {"tt":ROOT.kGreen+2, "hh":ROOT.kRed, "hh_B6":ROOT.kBlue+1, "hh_B11":ROOT.kViolet}
 
@@ -37,12 +38,15 @@ for key in ["bfc","afc"]:
         for key3 in order_list.keys():
             hlist[key][key2][key3] = f.Get(key2+" "+key+" "+key3.replace("_"," "))
 
+scale = {"hh":338/899997, "tt":26960510/1559547, "hh_B6":0, "hh_B11":0}
+
 for key in ["bfc","afc"]:
     for key3 in order_list.keys():
         legend = ROOT.TLegend(0.70,0.55,0.90,0.90)
         for i in [0,1,2,3]:
             #legend = ROOT.TLegend(0.78,0.5,0.98,0.75)
             h = hlist[key][sample_list[i]][key3]
+            scale_factor = scale[sample_list[i]]
             h.SetLineColor(color_list[sample_list[i]])
             legend.SetTextSize(0.06)
             legend.AddEntry(h,sample_list[i])
@@ -68,7 +72,7 @@ for key in ["bfc","afc"]:
             h = hlist[key][key2][key3]
             integ = h.Integral()
             if integ != 0:
-                h.Scale(1/integ)
+                h.Scale(scale_factor)
             if ik==0:
                 h.Draw("hist")
             else:
