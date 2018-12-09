@@ -8,8 +8,9 @@
   <lib name="EG"/>
   <use name="delphys/analysis"/>
   <use name="delphys/oxbridgekinetics"/>
-  <flags CXXFLAGS="-I/home/sunyoung/nanoAOD/src/delphys/external/interface/Delphes-3.4.1/"/>
-  <flags LDFLAGS="-L/home/sunyoung/nanoAOD/src/delphys/external/interface/Delphes-3.4.1/"/>
+  <flags CXXFLAGS="-I/home/sunyoung/delPhys/src/delphys/external/Delphes-3.4.1/"/>
+  <flags LDFLAGS="-L/home/sunyoung/delPhys/src/delphys/external/Delphes-3.4.1/"/>
   <flags LDFLAGS="-lDelphes"/>
+  <flags LDFLAGS="-lMinuit"/>
 </bin>
 erase this line after setting environment -->
