@@ -95,12 +95,6 @@ private :
   Mt2::Basic_Mt2_332_Calculator basic_mt2_332Calculator;
   Mt2::ChengHanBisect_Mt2_332_Calculator ch_bisect_mt2_332Calculator;
   
-  TMinuit *ptMinuit;
-  TMinuit *ptMinuitT1;
-  TMinuit *ptMinuitT2;
-  Double_t minuit_arglist[10];
-  Int_t ierflag = 0;
-
   double invis_mass     =  100; // GeV
   
 public :
@@ -111,9 +105,6 @@ public :
   static const int Electron_PID = 11;
   static const int Muon_PID = 13;
   static const int Tau_PID = 15;
-  static const int n_unknown_par = 4;
-  static constexpr double minuit_pmin = -5000;
-  static constexpr double minuit_pmax = 5000;
   static constexpr float Muon_Mass = 105.6583745; // MeV
   static constexpr float Electron_Mass = 0.5109989461; // MeV
 
@@ -124,8 +115,6 @@ public :
   void SetBranchAddress();
   void SetNanoBranchAddress();
   void SetDelphesBranchAddress();
-  void GetHiggsness();
-  void GetTopness();
   void Initiate(TString output_file_name);
   // during loop
   void ResetVariables();
