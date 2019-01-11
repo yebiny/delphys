@@ -9,14 +9,17 @@
 
 namespace delphys {
 
-Double_t ComputeDeltaR(Double_t eta1, Double_t eta2,
-                       Double_t phi1, Double_t phi2);
+template<typename T>
+T ComputeDeltaR(T eta1, T eta2,
+                      T phi1, T phi2);
 
-std::tuple<Double_t, Double_t, Double_t> ComputeAxes(
-    const std::vector<Double_t> & x_values,
-    const std::vector<Double_t> & y_values,
-    const std::vector<Double_t> & weights);
+template<typename Element>
+std::tuple<Element, Element, Element> ComputeAxes(
+    const std::vector<Element> & x_values,
+    const std::vector<Element> & y_values,
+    const std::vector<Element> & weights);
 
 } // NOTE end of delphys namespace
 
+#include "delphys/external/src/MathUtils.tpp"
 #endif // DELPHYS_EXTERNAL_MATHUTILS_H_
