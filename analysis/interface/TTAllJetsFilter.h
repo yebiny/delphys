@@ -9,13 +9,13 @@ class TTAllJetsFilter : private BaseAnalyser {
   TTAllJetsFilter(const TString & in_path,
                   const TString & out_path);
   ~TTAllJetsFilter();
-  void Loop() override;
+  void Loop();
 
  private:
-  void MakeBranch() override;
-  void Reset() override;
-  Bool_t SelectEvent() override;
-  void AnalyseEvent() override;
+  void MakeBranch();
+  void Reset();
+  Bool_t SelectEvent();
+  void AnalyseEvent();
 
   Bool_t IsAllJetsChannel();
 
