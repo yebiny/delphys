@@ -3,6 +3,8 @@
 
 #include "delphys/analysis/interface/BaseAnalyser.h"
 
+#include <numeric>
+
 
 class ResolvedAnalyser : private BaseAnalyser {
  public:
@@ -10,14 +12,14 @@ class ResolvedAnalyser : private BaseAnalyser {
                    const TString & out_path,
                    const TString & out_tree_name);
   ~ResolvedAnalyser();
-  void Loop() override;
+  void Loop();
 
  private:
   // inherited
-  void MakeBranch() override;
-  void Reset() override;
-  Bool_t SelectEvent() override;
-  void AnalyseEvent() override;
+  void MakeBranch();
+  void Reset();
+  Bool_t SelectEvent();
+  void AnalyseEvent();
 
   std::vector<const Jet*> SelectJet();
   std::vector<const Jet*> selected_jets_;
@@ -28,13 +30,8 @@ class ResolvedAnalyser : private BaseAnalyser {
   // per event
   Int_t label_;
 
-  /* TODO a jet as a point
-  Float_t major_axis_;
-  Float_t minor_axis_;
-  Float_t ptd_;
-  */
-
   // per jet
+  Int_t num_jet_;
   std::vector<TLorentzVector> jet_p4_;
   std::vector<Int_t> jet_num_chad_;
   std::vector<Int_t> jet_num_nhad_;
@@ -53,7 +50,9 @@ class ResolvedAnalyser : private BaseAnalyser {
   std::vector<Float_t> jet_b_tracking_;
 
   // per constituents
+  std::vector<Int_t> num_constituent_;
   std::vector<std::vector<TLorentzVector> > constituent_p4_;
+  std::vector<std::vector<Int_t> > constituent_pid_;
   std::vector<std::vector<Int_t> > constituent_type_;
 
   // constants
@@ -67,6 +66,8 @@ class ResolvedAnalyser : private BaseAnalyser {
 
   const Int_t kElectronPID_ = 11;
   const Int_t kMuonPID_ = 13;
+  const Int_t kWrongPID_ = std::numeric_limits<Int_t>::max();
+
 };
 
 
