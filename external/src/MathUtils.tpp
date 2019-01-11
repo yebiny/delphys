@@ -19,15 +19,17 @@ T ComputeDeltaR(T eta1, T eta2,
 }
 
 
-
 template<typename Element>
 std::tuple<Element, Element, Element> ComputeAxes(
     const std::vector<Element> & x_values,
     const std::vector<Element> & y_values,
     const std::vector<Element> & weights) {
 
-  if (x_values.size() != y_values.size() or x_values.size() != weights.size() or y_values.size() != weights.size()) {
-    std::cerr << "different size" << std::endl;
+  if (x_values.size() != y_values.size() or
+      y_values.size() != weights.size() or
+      weights.size() != x_values.size()) {
+
+    std::cerr << "ComputeAxes:: different size" << std::endl;
     return std::make_tuple(-1.0, -1.0, -1.0);
   }
   Int_t num_points = x_values.size();
@@ -70,8 +72,6 @@ std::tuple<Element, Element, Element> ComputeAxes(
 
   return std::make_tuple(major_axis, minor_axis, eccentricity);
 }
-
-
 
 
 } // end delphys namespace

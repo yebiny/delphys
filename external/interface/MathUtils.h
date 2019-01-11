@@ -11,7 +11,7 @@ namespace delphys {
 
 template<typename T>
 T ComputeDeltaR(T eta1, T eta2,
-                      T phi1, T phi2);
+                T phi1, T phi2);
 
 template<typename Element>
 std::tuple<Element, Element, Element> ComputeAxes(
