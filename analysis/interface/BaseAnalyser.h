@@ -33,20 +33,26 @@ class BaseAnalyser {
   void SetBranchAddress(std::set<TString> branches, Bool_t drop=false);
   void SetBranchAddress();
 
-  virtual void MakeBranch() = 0;
-  virtual void Reset() = 0;
-  virtual Bool_t SelectEvent() = 0;
-  virtual void AnalyseEvent() = 0;
-  virtual void Loop() = 0;
-
   TFile *in_file_, *out_file_;
   TTree *in_tree_, *out_tree_;
 
-  TClonesArray *events_, *particles_, *gen_jets_, *gen_mets_;
-  TClonesArray *tracks_, *towers_;
-  TClonesArray *eflow_tracks_, *eflow_photons_, *eflow_nhads_;
-  TClonesArray *electrons_, *muons_, *photons_;
-  TClonesArray *jets_, *fat_jets_, *mets_, *scalar_hts_, *vertices_;
+  TClonesArray *events_;
+  TClonesArray *particles_; // GenParticle
+  TClonesArray *gen_jets_;  // 
+  TClonesArray *gen_mets_;
+  TClonesArray *tracks_;
+  TClonesArray *towers_;
+  TClonesArray *eflow_tracks_;
+  TClonesArray *eflow_photons_;
+  TClonesArray *eflow_nhads_;
+  TClonesArray *electrons_;
+  TClonesArray *muons_;
+  TClonesArray *photons_;
+  TClonesArray *jets_;
+  TClonesArray *fat_jets_;
+  TClonesArray *mets_;
+  TClonesArray *scalar_hts_;
+  TClonesArray *vertices_;
 
   const std::set<TString> kAllDelphesBranches = {
       "Event", "Particle", "GenJet", "GenMissingET",
