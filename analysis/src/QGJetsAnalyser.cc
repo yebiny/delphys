@@ -580,17 +580,3 @@ void QGJetsAnalyser::Loop() {
     Analyse(entry);
   }
 }
-
-
-int main(int argc, char* argv[]) {
-  TString in_path(argv[1]);
-  TString out_path(argv[2]);
-
-  Bool_t is_dijet = in_path.Contains("qq") or in_path.Contains("gg");
-  Int_t label = (in_path.Contains("qq") or in_path.Contains("zq")) ? 1 : 0;
-
-  QGJetsAnalyser analyser(in_path, out_path, "jetAnalyser", is_dijet, label);
-  analyser.Loop();
-
-  return 0;
-}
