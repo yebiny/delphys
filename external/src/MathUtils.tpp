@@ -9,7 +9,6 @@
 
 namespace delphys {
 
-
 template<typename T>
 T ComputeDeltaR(T eta1, T eta2,
                 T phi1, T phi2) {

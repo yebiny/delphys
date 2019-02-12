@@ -9,7 +9,7 @@
 #include <iterator>
 #include <memory>
 
-
+using namespace delphys;
 
 ResolvedAnalyser::ResolvedAnalyser(const TString & in_path,
                                    const TString & out_path,
@@ -49,6 +49,7 @@ void ResolvedAnalyser::MakeBranch() {
   out_tree_->Branch("label", &label_, "label/I");
 
   // per jet : vector of 
+  out_tree_->Branch("num_jet", &num_jet_, "num_jet/I");
   out_tree_->Branch("jet_p4", &jet_p4_);
 
   out_tree_->Branch("jet_num_chad", &jet_num_chad_);
@@ -67,7 +68,9 @@ void ResolvedAnalyser::MakeBranch() {
   out_tree_->Branch("jet_b_tracking", &jet_b_tracking_);
 
   // per constituents : vector of vector of
+  out_tree_->Branch("num_constituent", &num_constituent_);
   out_tree_->Branch("constituent_p4", &constituent_p4_);
+  out_tree_->Branch("constituent_pid", &constituent_pid_);
   out_tree_->Branch("constituent_type", &constituent_type_);
 
   return ;
@@ -75,6 +78,9 @@ void ResolvedAnalyser::MakeBranch() {
 
 
 void ResolvedAnalyser::Reset() {
+  label_ = -1;
+
+  num_jet_ = -1;
   jet_p4_.clear();
 
   jet_num_chad_.clear();
@@ -92,7 +98,9 @@ void ResolvedAnalyser::Reset() {
   jet_b_dr_matching_.clear();
   jet_b_tracking_.clear();
 
+  num_constituent_.clear();
   constituent_p4_.clear();
+  constituent_pid_.clear();
   constituent_type_.clear();
 }
 
@@ -114,13 +122,13 @@ std::vector<const Jet*> ResolvedAnalyser::SelectJet() {
 
 Bool_t ResolvedAnalyser::SelectEvent() {
   if (jets_->GetEntries() < 6) {
-    return false;
+    return kFALSE;
   }
 
   // NOTE Select objects
   selected_jets_ = SelectJet();
   if(selected_jets_.size() < 6) {
-    return false;
+    return kFALSE;
   }
 
   return kTRUE;
@@ -171,6 +179,7 @@ void ResolvedAnalyser::AnalyseEvent() {
     Float_t j_phi = jet->Phi;
 
     constituent_p4_.push_back(std::vector<TLorentzVector>());
+    constituent_pid_.push_back(std::vector<Int_t>());
     constituent_type_.push_back(std::vector<Int_t>());
 
     Int_t num_chad = 0, num_nhad = 0, num_electron = 0, num_muon = 0, num_photon = 0;
@@ -181,14 +190,16 @@ void ResolvedAnalyser::AnalyseEvent() {
 
       TLorentzVector c_p4;
       Int_t c_type = -1;
+      Int_t pid = kWrongPID_;
 
       if (auto track = dynamic_cast<Track*>(constituent)) {
         c_p4 = track->P4();
+        pid = track->PID;
 
-        if (std::abs(track->PID) == kElectronPID_) { 
+        if (std::abs(pid) == kElectronPID_) { 
           c_type = kElectronType_;
           num_electron++;
-        } else if (std::abs(track->PID) == kMuonPID_) {
+        } else if (std::abs(pid) == kMuonPID_) {
           c_type = kMuonType_;
           num_muon++;
         } else { 
@@ -200,21 +211,23 @@ void ResolvedAnalyser::AnalyseEvent() {
         c_p4 = tower->P4();
 
         if (tower->Eem == 0.0) {
+          pid = 0;
+
           c_type = kNeutralHadronType_;
           num_nhad++;
         } else if (tower->Ehad == 0.0) {
+          pid = 22;
           c_type = kPhotonType_;
           num_photon++;
         } else
-          std::cout << ":p" << std::endl;
-
+          std::cout << "[[ERROR]]: Tower with Had " << tower->Ehad << " and EM " << tower->Eem << " energy" << std::endl;
       } else {
-        // FIXME cerr
-        std::cout << ":p" << std::endl;
+        std::cout << "[[ERROR]]: BAD DAUGHTER! " << constituent << std::endl;
       }
 
       constituent_p4_.back().push_back(c_p4);
-      constituent_type_.back().push_back(c_type); // photon
+      constituent_pid_.back().push_back(pid);
+      constituent_type_.back().push_back(c_type);
 
       cons_deta.push_back(c_p4.Eta() - j_eta);
       cons_dphi.push_back(TVector2::Phi_mpi_pi(c_p4.Phi() - j_phi));
@@ -230,7 +243,8 @@ void ResolvedAnalyser::AnalyseEvent() {
     jet_num_photon_.push_back(num_photon);
 
     Float_t major_axis, minor_axis, eccentricity;
-    std::tie(major_axis, minor_axis, eccentricity) = delphys::ComputeAxes(cons_deta, cons_dphi, cons_pt);
+    std::tie(major_axis, minor_axis, eccentricity) = ComputeAxes<Double_t>(
+        cons_deta, cons_dphi, cons_pt);
 
     jet_major_axis_.push_back(major_axis);
     jet_minor_axis_.push_back(minor_axis);

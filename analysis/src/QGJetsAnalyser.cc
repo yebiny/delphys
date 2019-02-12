@@ -1,7 +1,6 @@
 #include "delphys/analysis/interface/QGJetsAnalyser.h"
 
 #include "TLorentzVector.h"
-#include "TSystem.h"
 
 #include <algorithm> // std::fill
 #include <cmath> // std::abs, std::fabs, std::sqrt
@@ -434,7 +433,6 @@ Bool_t QGJetsAnalyser::PassZjets(TClonesArray * jets,
 
   return pass_zjets;
 }
-
 
 void QGJetsAnalyser::FillDaughters(const Jet* jet) {
   TLorentzVector jet_p4 = jet->P4();
