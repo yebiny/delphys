@@ -72,7 +72,6 @@ class QGJetsAnalyser : private BaseAnalyser {
   // Bool_t m_pass_zjets;
   Bool_t m_lepton_overlap; //
 
-
   std::vector<TLorentzVector> m_dau_p4;
   std::vector<Float_t>        m_dau_pt;
   std::vector<Float_t>        m_dau_deta;
@@ -99,7 +98,7 @@ class QGJetsAnalyser : private BaseAnalyser {
 
   // 
   Bool_t bad_hard_gen_seen_;
-  UInt_t num_passed_events_;
+  std::map<TString, Int_t> qgjets_stats_;
 
   // Constants
   const Bool_t kIsDijet;
