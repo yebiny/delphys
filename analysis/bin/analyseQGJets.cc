@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
   } else if (in_name.Contains("jj")) {
     label = 4;
     is_dijet = true;
-  } else if (in_name.Contains("zq")) {
+  } else if (in_name.Contains("zj")) {
     label = 5;
     is_dijet = false;
   } else {
