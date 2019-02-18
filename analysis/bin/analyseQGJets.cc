@@ -9,27 +9,27 @@ int main(int argc, char* argv[]) {
 
   TString in_name = gSystem->BaseName(in_path);
 
-  // quark-enriched sample has even label
+  // quark-enriched sample has odd label index
   Int_t label;
   Bool_t is_dijet;
-  if (in_name.Contains("qq")) {
+  if (in_name.Contains("gg")) {
     label = 0;
     is_dijet = true;
-  } else if (in_name.Contains("gg")) {
+  } else if (in_name.Contains("qq")) {
     label = 1;
     is_dijet = true;
-  } else if (in_name.Contains("zq")) {
+  } else if (in_name.Contains("zg")) {
     label = 2;
     is_dijet = false;
-  } else if (in_name.Contains("zg")) {
+  } else if (in_name.Contains("zq")) {
     label = 3;
     is_dijet = false;
-  } else if (in_name.Contains("zj")) {
-    label = 4;
-    is_dijet = false;
   } else if (in_name.Contains("jj")) {
-    label = 5;
+    label = 4;
     is_dijet = true;
+  } else if (in_name.Contains("zq")) {
+    label = 5;
+    is_dijet = false;
   } else {
     std::cout << in_path << std::endl;
     return 1;
