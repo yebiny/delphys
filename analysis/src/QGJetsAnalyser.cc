@@ -22,7 +22,9 @@ QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
 
   // Initialize properties
   bad_hard_gen_seen_ = false;
-  num_passed_events_ = 0;
+  qgjets_stats_["num_passed_events"] = 0;
+  qgjets_stats_["overlap_1st"] = 0;
+  qgjets_stats_["overlap_2nd"] = 0;
 
   //
   SetBranchAddress({"Vertex"}, /*drop=*/true);
@@ -46,9 +48,9 @@ QGJetsAnalyser::~QGJetsAnalyser() {
   out_file_->Write();
   out_file_->Close();
 
-  std::cout << "Passed / Total = "
-            << num_passed_events_ << " / " << in_tree_->GetEntries()
-            << std::endl;
+  for (const auto & each : qgjets_stats_) {
+    std::cout << ">>> " << each.first << ": " << each.second << std::endl;
+  }
 
   std::cout << "dtor end" << std::endl;
 }
@@ -92,6 +94,12 @@ void QGJetsAnalyser::MakeBranch() {
   BRANCH_I(electron_mult)
   BRANCH_I(muon_mult)
   BRANCH_I(photon_mult)
+
+  BRANCH_I(parton_id)
+  BRANCH_I(flavor_id)
+  BRANCH_I(flavor_algo_id)
+  BRANCH_I(flavor_phys_id)
+
 
   out_tree_->Branch("dau_p4", &m_dau_p4);
   BRANCH_VF(dau_pt)
@@ -191,13 +199,9 @@ void QGJetsAnalyser::ResetOnEachJet() {
 
 
 Bool_t QGJetsAnalyser::SelectEvent() {
-  if (kIsDijet) {
-    return IsBalanced(jets_);
-  } else {
-    return PassZjets(jets_, muons_, electrons_);
-  }
+  if (kIsDijet) return IsBalanced(jets_);
+  else          return PassZjets(jets_, muons_, electrons_);
 }
-
 
 
 void QGJetsAnalyser::Analyse(Int_t entry) {
@@ -213,13 +217,10 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
 
   for (Int_t idx_gen = 0; idx_gen < particles_->GetEntries(); idx_gen++) {
     auto p = dynamic_cast<const GenParticle*>(particles_->At(idx_gen));
-
     if (p->Status != kHardProcessPartonStatus) continue;
     // Consider light quarks and gluons only
     if (std::abs(p->PID) > 5 and p->PID != kGluonPID) continue;
-
     hard_partons.push_back(p);
-
     if (hard_partons.size() == 2) break;
   }
 
@@ -229,32 +230,24 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // NOTE Jet
+  // NOTE [Jet]
   //////////////////////////////////////////////////////////////////////////////
-
-  for (Int_t idx_jet = 0; idx_jet < jets_->GetEntries(); idx_jet++) {
+  Int_t max_jet_idx = kIsDijet ? 2 : 1;
+  for (Int_t idx_jet = 0; idx_jet < max_jet_idx; idx_jet++) {
     ResetOnEachJet();
 
-    if (kIsDijet and idx_jet >= 2) {
-      // m_balanced = false;
-      continue;
-    }
-
-    if (not kIsDijet and idx_jet >= 1) {
-      // m_pass_zjets = false;
-      continue;
-    }
-
+    // if (kIsDijet and idx_jet >= 2) continue;
+    // if ((not kIsDijet) and idx_jet >= 1) continue;
 
     auto jet = dynamic_cast<Jet*>(jets_->At(idx_jet));
-    if (jet->PT < kMinJetPT) continue;
-    if (std::fabs(jet->Eta) > kMaxJetEta) continue;
+    // IsBalanced, PassZjets
+    // if (jet->PT < kMinJetPT) continue;
+
 
     ////////////////////////////////////////////////////////////////////////////
     // NOTE Match to hard process in Pythia8
     ////////////////////////////////////////////////////////////////////////////
     const GenParticle* matched_parton = nullptr;
-
     for (const auto & parton : hard_partons) {
       Float_t delta_r = jet->P4().DeltaR(parton->P4());
 
@@ -279,7 +272,11 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
       }
     }
 
-    if (overlap) continue;
+    if (overlap) {
+      if (idx_jet == 0)      qgjets_stats_["overlap_1st"]++;
+      else if (idx_jet == 1) qgjets_stats_["overlap_2nd"]++;
+      continue;
+    }
 
 
     //////////////////////////////////////////////////
@@ -306,12 +303,17 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     }
 
     /////////////////////////////////////////////
-    // NOTE
+    // NOTE Fill tree
     ///////////////////////////////////////////////
     m_pt = jet->PT;
     m_eta = jet->Eta;
     m_phi = jet->Phi;
+
     m_parton_id = matched_parton ? matched_parton->PID : 0;
+
+    m_flavor_id = jet->Flavor;
+    m_flavor_algo_id = jet->FlavorAlgo;
+    m_flavor_phys_id = jet->FlavorPhys;
 
     FillDaughters(jet);
 
@@ -333,16 +335,16 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
 
     // ExtractSatellites();
 
-    out_tree_->Fill();
-
     m_order++;
+
+    out_tree_->Fill();
   } // end loop over jets
 
 }
 
 /* Is the event balanced according to the criteria of pg 13 of
    http://cds.cern.ch/record/2256875/files/JME-16-003-pas.pdf */
-Bool_t QGJetsAnalyser::IsBalanced(TClonesArray * jets) {
+Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
   if (jets->GetEntries() < 2) return false;
 
   auto jet1 = dynamic_cast<Jet*>(jets->At(0));
@@ -351,6 +353,14 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray * jets) {
   // 2 jets of 30 GeV
   if (jet1->PT < 30.0) return false;
   if (jet2->PT < 30.0) return false;
+
+  /***************************************************************************** 
+   * The eta cut is there to match the tracker range (or should be around that),
+   * if we discard one of the jets because of it, then, yes, the event should be
+   * discarded.
+   ****************************************************************************/
+  if (std::fabs(jet1->Eta) > kMaxJetEta) return false;
+  if (std::fabs(jet2->Eta) > kMaxJetEta) return false;
 
   // that are back-to-back
   if (jet1->P4().DeltaPhi(jet2->P4()) < 2.5) return false;
@@ -366,9 +376,9 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray * jets) {
 
 /* Does the event pass the Zjets criteria according to the criteria of pg 11-12
    of http://cds.cern.ch/record/2256875/files/JME-16-003-pas.pdf */
-Bool_t QGJetsAnalyser::PassZjets(TClonesArray * jets,
-                                 TClonesArray * muons,
-                                 TClonesArray * electrons) {
+Bool_t QGJetsAnalyser::PassZjets(TClonesArray* jets,
+                                 TClonesArray* muons,
+                                 TClonesArray* electrons) {
 
   Bool_t pass_zjets = false;
 
@@ -388,7 +398,6 @@ Bool_t QGJetsAnalyser::PassZjets(TClonesArray * jets,
       max_pt = jet->PT;
       idx_max_pt = idx_jet;
     }
-
   }
 
   if (idx_max_pt < 0) return false;
@@ -486,15 +495,10 @@ void QGJetsAnalyser::FillDaughters(const Jet* jet) {
       m_dau_eemfrac.push_back(0.0);
       m_dau_ehadfrac.push_back(0.0);
 
-
       Int_t abs_pid = std::abs(track->PID);
-      if (abs_pid == kElectronPID) {
-        m_electron_mult++;
-      } else if (abs_pid == kMuonPID) {
-        m_muon_mult++;
-      } else {
-        m_chad_mult++;
-      }
+      if (abs_pid == kElectronPID)  m_electron_mult++;
+      else if (abs_pid == kMuonPID) m_muon_mult++;
+      else                          m_chad_mult++;
 
     } else {
       std::cout << "BAD DAUGHTER! " << daughter << std::endl;
@@ -533,27 +537,27 @@ void QGJetsAnalyser::MakeJetImage() {
 
     if (abs_pid == kElectronPID) {
       m_image_electron_pt_33[pixel] += pt;
-      m_image_electron_mult_33[pixel] += 1.0;
+      m_image_electron_mult_33[pixel] += 1.0f;
     } else if (abs_pid == kMuonPID) {
       m_image_muon_pt_33[pixel] += pt;
-      m_image_muon_mult_33[pixel] += 1.0;
+      m_image_muon_mult_33[pixel] += 1.0f;
     } else if (abs_pid == kPhotonPID) {
       m_image_photon_pt_33[pixel] += pt;
-      m_image_photon_mult_33[pixel] += 1.0;
+      m_image_photon_mult_33[pixel] += 1.0f;
     } else if (abs_pid == 0) {
       m_image_nhad_pt_33[pixel] += pt;
-      m_image_nhad_mult_33[pixel] += 1.0;
+      m_image_nhad_mult_33[pixel] += 1.0f;
     } else {
       m_image_chad_pt_33[pixel] += pt;
-      m_image_chad_mult_33[pixel] += 1.0;
+      m_image_chad_mult_33[pixel] += 1.0f;
     }
   } // end loop over daughters
 }
 
 
 void QGJetsAnalyser::Loop() {
-  Int_t kNumEntries = in_tree_->GetEntries();
-  Int_t kPrintFreq = kNumEntries / 20;
+  const Int_t kNumEntries = in_tree_->GetEntries();
+  const Int_t kPrintFreq = kNumEntries / 20;
   TString kMsg = "[%d/%d (%.2f %)]";
 
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
@@ -568,12 +572,9 @@ void QGJetsAnalyser::Loop() {
     }
 
 
-    if (SelectEvent()) {
-      num_passed_events_++;
-    } else {
-      continue;
-    }
+    if (not SelectEvent()) continue;
 
+    qgjets_stats_["num_passed_events"]++;
     ResetOnEachEvent();
     Analyse(entry);
   }
