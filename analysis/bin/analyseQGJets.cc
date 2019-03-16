@@ -30,7 +30,12 @@ int main(int argc, char* argv[]) {
   } else if (in_name.Contains("zj")) {
     label = 5;
     is_dijet = false;
+  } else if (in_name.Contains("qg")) {
+    label = -1;
+    is_dijet = true;
   } else {
+    std::cout << "Expected one of ['gg', 'qq', 'zg', 'zq', 'jj', 'zj', 'qg'], "
+              << "but got " << in_name << std::endl;
     std::cout << in_path << std::endl;
     return 1;
   }

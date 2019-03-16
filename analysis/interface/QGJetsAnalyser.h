@@ -110,12 +110,19 @@ class QGJetsAnalyser : private BaseAnalyser {
   const Int_t kGluonPID = 21;
   const Int_t kPhotonPID = 22;
 
-  const Float_t kMinJetPT = 20.0;
-  const Float_t kMaxJetEta = 2.4;
-  const Float_t kDeltaRCut = 0.3;
+  // Common
+  const Float_t kMinJetPT = 30.0f;
+  const Float_t kMaxJetEta = 2.4f;
+  const Float_t kDeltaRCut = 0.3f;
 
-  const Float_t kImageDeltaEtaMax = 0.4;
-  const Float_t kImageDeltaPhiMax = 0.4;
+  // IsBalanced
+  const Float_t kDeltaPhiCut_ = 2.5f;
+
+  // PassZJets
+
+
+  const Float_t kImageDeltaEtaMax = 0.4f;
+  const Float_t kImageDeltaPhiMax = 0.4f;
 };
 
 

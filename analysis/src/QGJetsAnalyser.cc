@@ -351,8 +351,8 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
   auto jet2 = dynamic_cast<Jet*>(jets->At(1));
 
   // 2 jets of 30 GeV
-  if (jet1->PT < 30.0) return false;
-  if (jet2->PT < 30.0) return false;
+  if (jet1->PT < kMinJetPT) return false;
+  if (jet2->PT < kMinJetPT) return false;
 
   /***************************************************************************** 
    * The eta cut is there to match the tracker range (or should be around that),
@@ -363,7 +363,7 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
   if (std::fabs(jet2->Eta) > kMaxJetEta) return false;
 
   // that are back-to-back
-  if (jet1->P4().DeltaPhi(jet2->P4()) < 2.5) return false;
+  if (jet1->P4().DeltaPhi(jet2->P4()) < kDeltaPhiCut_) return false;
 
   // and any 3rd jet requires pt < 30% of the avg. of the 2 leading jets
   if (jets->GetEntries() > 2) {
