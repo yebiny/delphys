@@ -20,12 +20,15 @@ class BaseAnalyser {
   BaseAnalyser();
 
   BaseAnalyser(const TString & in_path,
+               const TString & out_path);
+
+  BaseAnalyser(const TString & in_path,
                const TString & out_path,
-               const TString & out_tree_name="delphys");
+               const TString & out_tree_name);
 
   BaseAnalyser(const std::vector<TString> & in_paths,
                const TString & out_path,
-               const TString & out_tree_name="delphys");
+               const TString & out_tree_name);
 
   ~BaseAnalyser();
 
@@ -44,7 +47,7 @@ class BaseAnalyser {
   TClonesArray *towers_;
   TClonesArray *eflow_tracks_;
   TClonesArray *eflow_photons_;
-  TClonesArray *eflow_nhads_;
+  TClonesArray *eflow_neutral_hadrons_;
   TClonesArray *electrons_;
   TClonesArray *muons_;
   TClonesArray *photons_;
