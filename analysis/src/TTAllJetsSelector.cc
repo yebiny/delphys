@@ -1,4 +1,4 @@
-#include "delphys/analysis/interface/TTAllJetsFilter.h"
+#include "delphys/analysis/interface/TTAllJetsSelector.h"
 
 #include "TString.h"
 #include "TSystem.h"
@@ -9,22 +9,18 @@
 #include <queue>
 
 
-TTAllJetsFilter::TTAllJetsFilter(const TString & in_path,
-                                 const TString & out_path) : BaseAnalyser() {
-
-  in_file_ = TFile::Open(in_path, "READ");
-  in_tree_ = dynamic_cast<TTree*>(in_file_->Get("Delphes"));
+TTAllJetsSelector::TTAllJetsSelector(const TString & in_path,
+                                     const TString & out_path) :
+    BaseAnalyser(in_path, out_path) {
+  std::cout << "begin ctor" << std::endl;
 
   SetBranchAddress();
-
-  out_file_ = TFile::Open(out_path, "RECREATE");
-  out_tree_ = in_tree_->CloneTree(0);
-  out_tree_->SetDirectory(out_file_);
 
   std::set<Int_t> channel_codes = {
       0,
       1, 10, 100,
-      2, 11, 101, 20, 110, 200};
+      2, 11, 101, 20, 110, 200
+  };
 
   for (const auto & each : channel_codes) {
     decay_channel_count_[each] = 0;
@@ -34,7 +30,7 @@ TTAllJetsFilter::TTAllJetsFilter(const TString & in_path,
 }
 
 
-TTAllJetsFilter::~TTAllJetsFilter() {
+TTAllJetsSelector::~TTAllJetsSelector() {
   std::cout << "dtor" << std::endl;
 
   Float_t num_events = static_cast<Float_t>(in_tree_->GetEntries());
@@ -81,20 +77,7 @@ TTAllJetsFilter::~TTAllJetsFilter() {
 }
 
 
-void TTAllJetsFilter::MakeBranch() {
-  return;
-}
-
-
-void TTAllJetsFilter::Reset() {
-  return;
-}
-
-
-
-
-
-Bool_t TTAllJetsFilter::IsAllJetsChannel() {
+Bool_t TTAllJetsSelector::IsAllJetsChannel() {
 
   // Find top quarks
   std::vector<GenParticle*> top_quarks;
@@ -127,7 +110,8 @@ Bool_t TTAllJetsFilter::IsAllJetsChannel() {
 
   static const std::set<Int_t> kPassPID = {
       1, 2, 3, 4, 5,
-      12, 14, 16};
+      12, 14, 16
+  };
 
 
   Int_t num_electrons = 0, num_muons = 0, num_taus = 0;
@@ -154,7 +138,7 @@ Bool_t TTAllJetsFilter::IsAllJetsChannel() {
   } // end while loop
  
 
-  Int_t code = num_electrons + 10*num_muons + 100*num_taus;
+  Int_t code = num_electrons + 10 * num_muons + 100 * num_taus;
   decay_channel_count_[code]++;
 
   Bool_t is_all_jets = (code == 0);
@@ -164,19 +148,19 @@ Bool_t TTAllJetsFilter::IsAllJetsChannel() {
 
 
 
-Bool_t TTAllJetsFilter::SelectEvent() {
+Bool_t TTAllJetsSelector::SelectEvent() {
   return IsAllJetsChannel();
 }
 
 
-void TTAllJetsFilter::AnalyseEvent() {
+void TTAllJetsSelector::Analyse() {
   out_tree_->Fill();
 }
 
-void TTAllJetsFilter::Loop() {
-  Int_t kNumEntries = in_tree_->GetEntries();
-  Int_t kPrintFreq = kNumEntries / 100;
-  TString kMessageTemplate = "[%d/%d (%.2f %)] # of passed events: %d (%.2f %)\n";
+void TTAllJetsSelector::Loop() {
+  const Int_t kNumEntries = in_tree_->GetEntries();
+  const Int_t kPrintFreq = kNumEntries / 100;
+  const TString kMsgFmt = "[%d/%d (%.2f %)] # of passed events: %d (%.2f %)";
 
   Int_t num_passed = 0;
 
@@ -184,30 +168,20 @@ void TTAllJetsFilter::Loop() {
     in_tree_->GetEntry(entry);
 
     if (entry % kPrintFreq == 0) {
-      TString msg = TString::Format(kMessageTemplate,
-                                    entry + 1,
-                                    kNumEntries,
-                                    100 * static_cast<Float_t>(entry + 1) / kNumEntries,
-                                    num_passed,
-                                    100 * static_cast<Float_t>(num_passed) / (entry + 1));
+      Float_t progress = 100 * static_cast<Float_t>(entry + 1) / kNumEntries;
+      Float_t eff = 100 * static_cast<Float_t>(num_passed) / (entry + 1);
 
-      std::cout << msg;
+      auto msg = TString::Format(kMsgFmt, entry + 1, kNumEntries, progress,
+                                 num_passed, eff);
+      std::cout << msg << std::endl;
     } 
 
     if (SelectEvent()) {
-      AnalyseEvent();
+      Analyse();
       num_passed++;
     }
   }
 }
 
 
-int main(int argc, char* argv[]) {
-  TString in_path(argv[1]);
-  TString out_path(argv[2]);
 
-  TTAllJetsFilter analyser(in_path, out_path);
-  analyser.Loop();
-
-  return 0;
-}
