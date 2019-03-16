@@ -33,11 +33,12 @@ int main(int argc, char* argv[]) {
 
   for (Int_t entry = 0; entry < kTotalInputEntries; entry++) {
     if (entry % kPrintFreq == 0) {
-      TString msg = TString::Format("[%d/%d] %.2f ",
-                                    entry,
-                                    kTotalInputEntries,
-                                    static_cast<Float_t>(entry) / kTotalInputEntries);
-      std::cout << msg << std::endl;
+      TString msg = TString::Format(
+          "[%d/%d] %.2f",
+          entry,
+          kTotalInputEntries,
+          static_cast<Float_t>(entry) / kTotalInputEntries * 100);
+      std::cout << msg << " %" << std::endl;
     }
 
 

@@ -1,10 +1,11 @@
 #ifndef DELPHYS_EXTERNAL_TREESHUFFLER_H_
 #define DELPHYS_EXTERNAL_TREESHUFFLER_H_
 
-#include "TString.h"
-
 #include <vector>
 #include <map>
+#include <random>
+
+#include "TString.h"
 
 class TTree;
 class TFile;
@@ -19,6 +20,7 @@ class TreeShuffler {
   void GetEntry();
   Int_t GetEntries();
   Bool_t IsExhausted();
+  UInt_t RandomChoice();
 
  private:
   struct TreeData {
@@ -33,11 +35,16 @@ class TreeShuffler {
   TString tree_name_;
   std::map<Int_t, TreeData> candidates_;
 
-  std::vector<UInt_t> alives_;
-  Int_t num_alives_;
 
-  Int_t num_total_;
+  UInt_t num_total_;
   Int_t num_total_entries_;
+
+  std::random_device device_;
+  std::mt19937 engine_;
+  std::discrete_distribution<UInt_t> dist_;
+  std::vector<Int_t> weights_;
+  std::vector<UInt_t> exhausted_;
+  UInt_t progress_;
 };
 
 

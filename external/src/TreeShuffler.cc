@@ -7,19 +7,19 @@
 #include <iostream>
 #include <cstdlib> // std::rand, std::abort
 #include <memory>
+#include <algorithm> // find
 
 
 TreeShuffler::TreeShuffler(std::vector<TString> paths,
                            TString tree_name)
     : tree_name_(tree_name) {
 
-  num_total_ = static_cast<Int_t>(paths.size());
+  num_total_ = paths.size();
 
   num_total_entries_ = 0;
-  for (Int_t idx=0; idx < num_total_; idx++) {
+  for (UInt_t idx=0; idx < num_total_; idx++) {
     TString & path = paths.at(idx);
 
-    // FIXME unique_ptr
     TFile* root_file = TFile::Open(path, "READ");
     TTree* tree = dynamic_cast<TTree*>(root_file->Get(tree_name_));
 
@@ -28,10 +28,12 @@ TreeShuffler::TreeShuffler(std::vector<TString> paths,
 
     candidates_[idx] = {path, root_file, tree, 0, num_entries};
 
-    alives_.push_back(idx);
-
+    weights_.push_back(num_entries);
   }
-  num_alives_ = static_cast<Int_t>(alives_.size());
+
+  engine_ = std::mt19937(device_());
+  dist_ = std::discrete_distribution<UInt_t>(weights_.begin(), weights_.end());
+  progress_ = 0;
 }
 
 
@@ -42,19 +44,38 @@ TreeShuffler::~TreeShuffler() {
 }
 
 
+UInt_t TreeShuffler::RandomChoice() {
+  UInt_t index = dist_(engine_);
+
+  // check if this index correspond
+  auto iter = std::find(exhausted_.begin(), exhausted_.end(), index);
+
+  if (iter != exhausted_.end()) {
+    return RandomChoice();
+  }
+  return index;
+}
+
+
 void TreeShuffler::GetEntry() {
-  // random choice
-  Int_t alives_idx = std::rand() % alives_.size();
-  Int_t idx = alives_[alives_idx];
+  progress_++;
+
+  UInt_t idx = RandomChoice();
 
   candidates_[idx].tree->GetEntry(candidates_[idx].entry);
   candidates_[idx].entry++;
 
   if (candidates_[idx].entry == candidates_[idx].num_entries) {
-    alives_.erase(alives_.begin() + alives_idx);
-    num_alives_ = static_cast<Int_t>(alives_.size());
+    exhausted_.push_back(idx);
+
     std::cout << candidates_[idx].path << "'s tree is exhausted" << std::endl;
-    std::cout << TString::Format("Total: %d | Remaining: %d\n", num_total_, num_alives_) << std::endl;
+
+    std::cout << progress_ << " / " << num_total_entries_ << std::endl;
+
+    Int_t num_alives = num_total_ - exhausted_.size();
+    std::cout << TString::Format("Total: %d | Remaining: %d\n",
+                                 num_total_, num_alives)
+              << std::endl;
   }
 }
 
@@ -64,24 +85,14 @@ TTree* TreeShuffler::CloneTree() {
 }
 
 void TreeShuffler::CopyAddress(TTree* tree) {
-  for(const auto & each : candidates_)
+  for (const auto & each : candidates_)
     tree->CopyAddresses(each.second.tree);
 }
 
 
 Bool_t TreeShuffler::IsExhausted() {
-  Bool_t is_exhausted;
-  if (num_alives_ > 0) {
-    is_exhausted = true;
-  } else if (num_alives_ == 0) {
-    is_exhausted = false;
-  } else {
-    std::abort();
-  }
-
-  return is_exhausted;
+  return (exhausted_.size() == num_total_);
 }
-
 
 Int_t TreeShuffler::GetEntries() {
   return num_total_entries_;
