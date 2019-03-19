@@ -12,12 +12,10 @@ class TTAllJetsSelector : private BaseAnalyser {
   void Loop();
 
  private:
-  void MakeBranch();
-  void Reset();
-  Bool_t SelectEvent();
-  void Analyse();
+  Bool_t selectEvent();
+  void analyse();
 
-  Bool_t IsAllJetsChannel();
+  Bool_t isAllJetsChannel();
 
   std::map<Int_t, Int_t> decay_channel_count_;
 };

@@ -14,7 +14,7 @@ TTAllJetsSelector::TTAllJetsSelector(const TString & in_path,
     BaseAnalyser(in_path, out_path) {
   std::cout << "begin ctor" << std::endl;
 
-  SetBranchAddress();
+  setBranchAddress();
 
   std::set<Int_t> channel_codes = {
       0,
@@ -77,7 +77,9 @@ TTAllJetsSelector::~TTAllJetsSelector() {
 }
 
 
-Bool_t TTAllJetsSelector::IsAllJetsChannel() {
+Bool_t TTAllJetsSelector::selectEvent() {
+  // FIXME
+  // http://home.thep.lu.se/~torbjorn/pythia82html/ParticleProperties.html
 
   // Find top quarks
   std::vector<GenParticle*> top_quarks;
@@ -148,12 +150,7 @@ Bool_t TTAllJetsSelector::IsAllJetsChannel() {
 
 
 
-Bool_t TTAllJetsSelector::SelectEvent() {
-  return IsAllJetsChannel();
-}
-
-
-void TTAllJetsSelector::Analyse() {
+void TTAllJetsSelector::analyse() {
   out_tree_->Fill();
 }
 
@@ -176,8 +173,8 @@ void TTAllJetsSelector::Loop() {
       std::cout << msg << std::endl;
     } 
 
-    if (SelectEvent()) {
-      Analyse();
+    if (selectEvent()) {
+      analyse();
       num_passed++;
     }
   }
