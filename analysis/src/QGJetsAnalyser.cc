@@ -15,7 +15,7 @@ QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
                                Bool_t is_dijet,
                                Int_t label) : 
     BaseAnalyser(in_path, out_path, out_tree_name),
-    m_label(label),
+    label_(label),
     kIsDijet(is_dijet) {
 
   std::cout << "ctor begin" << std::endl;
@@ -27,7 +27,7 @@ QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
   qgjets_stats_["overlap_2nd"] = 0;
 
   //
-  SetBranchAddress({"Vertex"}, /*drop=*/true);
+  setBranchAddress({"Vertex"}, /*drop=*/true);
   MakeBranch();
 
   //
@@ -61,17 +61,18 @@ void QGJetsAnalyser::MakeBranch() {
   ResetOnEachEvent();
   ResetOnEachJet();
 
-  #define BRANCH_(name, suffix) out_tree_->Branch(#name, &m_##name, #name "/" #suffix);
+  #define BRANCH_(name, suffix) out_tree_->Branch(#name, & name##_, #name "/" #suffix);
   #define BRANCH_I(name) BRANCH_(name, I);
   #define BRANCH_F(name) BRANCH_(name, F);
   #define BRANCH_O(name) BRANCH_(name, O);
 
-  #define BRANCH_A_(name, size, suffix) out_tree_->Branch(#name, &m_##name, #name"["#size"]/"#suffix);
+  #define BRANCH_A_(name, size, suffix) out_tree_->Branch(#name, & name##_, #name"["#size"]/"#suffix);
   #define BRANCH_AF(name, size)  BRANCH_A_(name, size, F);
 
-  #define BRANCH_VF(name) out_tree_->Branch(#name, "vector<Float_t>", &m_##name);
-  #define BRANCH_VI(name) out_tree_->Branch(#name, "vector<Int_t>",   &m_##name);  
-  #define BRANCH_VO(name) out_tree_->Branch(#name, "vector<Bool_t>",  &m_##name);  
+  #define BRANCH_V_(name, type) out_tree_->Branch(#name, "vector<"#type">", & name##_ );
+  #define BRANCH_VF(name) BRANCH_V_(name, Float_t);
+  #define BRANCH_VI(name) BRANCH_V_(name, Int_t);
+  #define BRANCH_VO(name) BRANCH_V_(name, Bool_t);
 
   BRANCH_I(event)
   BRANCH_I(num_jets)
@@ -101,7 +102,7 @@ void QGJetsAnalyser::MakeBranch() {
   BRANCH_I(flavor_phys_id)
 
 
-  out_tree_->Branch("dau_p4", &m_dau_p4);
+  out_tree_->Branch("dau_p4", &dau_p4_);
   BRANCH_VF(dau_pt)
   BRANCH_VF(dau_deta)
   BRANCH_VF(dau_dphi)
@@ -138,63 +139,63 @@ void QGJetsAnalyser::MakeBranch() {
 }
 
 void QGJetsAnalyser::ResetOnEachEvent() {
-  m_event = 0; // nEvent
-  m_num_jets = 0; // nJets
-  m_num_good_jets = 0; // nGoodJets
-  m_num_primary_vertices = 0; // nPriVtxs
-  m_order = 0;
+  event_ = 0; // nEvent
+  num_jets_ = 0; // nJets
+  num_good_jets_ = 0; // nGoodJets
+  num_primary_vertices_ = 0; // nPriVtxs
+  order_ = 0;
 }
 
 
 void QGJetsAnalyser::ResetOnEachJet() {
-  // NOTE m_label do not need to be reset.
+  // NOTE label do not need to be reset.
 
-  m_pt = 0.0f;
-  m_eta = 0.0f;
-  m_phi = 0.0f;
-  m_pt_dr_log = 0.0f;
-  m_ptd = 0.0f; // jet energy sharing variable
-  m_major_axis = 0.0f;
-  m_minor_axis = 0.0f;
+  pt_ = 0.0f;
+  eta_ = 0.0f;
+  phi_ = 0.0f;
+  pt_dr_log_ = 0.0f;
+  ptd_ = 0.0f; // jet energy sharing variable
+  major_axis_ = 0.0f;
+  minor_axis_ = 0.0f;
 
   // multiplicity
-  m_chad_mult = 0; // charged hadrons
-  m_nhad_mult = 0; // neutral hadrons
-  m_electron_mult = 0;
-  m_muon_mult = 0;
-  m_photon_mult = 0;
+  chad_mult_ = 0; // charged hadrons
+  nhad_mult_ = 0; // neutral hadrons
+  electron_mult_ = 0;
+  muon_mult_ = 0;
+  photon_mult_ = 0;
 
-  m_parton_id = 0;
-  m_flavor_id = 0;
-  m_flavor_algo_id = 0;
-  m_flavor_phys_id = 0;
+  parton_id_ = 0;
+  flavor_id_ = 0;
+  flavor_algo_id_ = 0;
+  flavor_phys_id_ = 0;
 
-  m_num_dau = 0;
-  m_matched = false;
-  m_lepton_overlap = false;
+  num_dau_ = 0;
+  matched_ = false;
+  lepton_overlap_ = false;
 
-  m_dau_p4.clear();
-  m_dau_pt.clear();
-  m_dau_deta.clear();
-  m_dau_dphi.clear();
-  m_dau_charge.clear();
-  m_dau_pid.clear();
-  m_dau_is_hadronic.clear();
-  m_dau_is_track.clear();
-  m_dau_eemfrac.clear();
-  m_dau_ehadfrac.clear();
+  dau_p4_.clear();
+  dau_pt_.clear();
+  dau_deta_.clear();
+  dau_dphi_.clear();
+  dau_charge_.clear();
+  dau_pid_.clear();
+  dau_is_hadronic_.clear();
+  dau_is_track_.clear();
+  dau_eemfrac_.clear();
+  dau_ehadfrac_.clear();
 
   #define FILL_ZERO(array, size) std::fill(array, array + size, 0.0);
-  FILL_ZERO(m_image_electron_pt_33,   1089)
-  FILL_ZERO(m_image_muon_pt_33,       1089)
-  FILL_ZERO(m_image_photon_pt_33,     1089)
-  FILL_ZERO(m_image_chad_pt_33,       1089)
-  FILL_ZERO(m_image_nhad_pt_33,       1089)
-  FILL_ZERO(m_image_electron_mult_33, 1089)
-  FILL_ZERO(m_image_muon_mult_33,     1089)
-  FILL_ZERO(m_image_photon_mult_33,   1089)
-  FILL_ZERO(m_image_chad_mult_33,     1089)
-  FILL_ZERO(m_image_nhad_mult_33,     1089)
+  FILL_ZERO(image_electron_pt_33_,   1089)
+  FILL_ZERO(image_muon_pt_33_,       1089)
+  FILL_ZERO(image_photon_pt_33_,     1089)
+  FILL_ZERO(image_chad_pt_33_,       1089)
+  FILL_ZERO(image_nhad_pt_33_,       1089)
+  FILL_ZERO(image_electron_mult_33_, 1089)
+  FILL_ZERO(image_muon_mult_33_,     1089)
+  FILL_ZERO(image_photon_mult_33_,   1089)
+  FILL_ZERO(image_chad_mult_33_,     1089)
+  FILL_ZERO(image_nhad_mult_33_,     1089)
 }
 
 
@@ -205,10 +206,10 @@ Bool_t QGJetsAnalyser::SelectEvent() {
 
 
 void QGJetsAnalyser::Analyse(Int_t entry) {
-  m_event = entry; 
-  m_num_jets = jets_->GetEntries();
+  event_ = entry; 
+  num_jets_ = jets_->GetEntries();
   // TODO m_good_jets
-  m_num_primary_vertices = vertices_ ? vertices_->GetEntries() : 1;
+  num_primary_vertices_ = vertices_ ? vertices_->GetEntries() : 1;
 
   //////////////////////////////////////////////////////////////////////////////
   // NOTE [GenParticle] Find hard process partons
@@ -219,7 +220,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     auto p = dynamic_cast<const GenParticle*>(particles_->At(idx_gen));
     if (p->Status != kHardProcessPartonStatus) continue;
     // Consider light quarks and gluons only
-    if (std::abs(p->PID) > 5 and p->PID != kGluonPID) continue;
+    if (std::abs(p->PID) > 5 and p->PID != kGluonPID_) continue;
     hard_partons.push_back(p);
     if (hard_partons.size() == 2) break;
   }
@@ -251,8 +252,8 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     for (const auto & parton : hard_partons) {
       Float_t delta_r = jet->P4().DeltaR(parton->P4());
 
-      if (delta_r < kDeltaRCut) {
-        m_matched = true;
+      if (delta_r < kDeltaRCut_) {
+        matched_ = true;
         matched_parton = parton;
         break;
       }
@@ -266,7 +267,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
       if (idx_jet == idx_other) continue;
       auto other_jet = dynamic_cast<Jet*>(jets_->At(idx_other));
       Float_t delta_r = jet->P4().DeltaR(other_jet->P4()); 
-      if (delta_r < kDeltaRCut) {
+      if (delta_r < kDeltaRCut_) {
         overlap = true;
         break;
       }
@@ -285,18 +286,18 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     for (Int_t idx_elec = 0; idx_elec < electrons_->GetEntries(); ++idx_elec) {
       auto electron = dynamic_cast<Electron*>(electrons_->At(idx_elec));
       Float_t delta_r = jet->P4().DeltaR(electron->P4());
-      if (delta_r < kDeltaRCut) {
-        m_lepton_overlap = true;
+      if (delta_r < kDeltaRCut_) {
+        lepton_overlap_ = true;
         break;
       }
     }
 
-    if (not m_lepton_overlap) {
+    if (not lepton_overlap_) {
       for (Int_t idx_mu = 0; idx_mu < muons_->GetEntries(); ++idx_mu) {
         auto muon = dynamic_cast<Muon*>(muons_->At(idx_mu));
         Float_t delta_r = jet->P4().DeltaR(muon->P4());
-        if (delta_r < kDeltaRCut) {
-          m_lepton_overlap = true;
+        if (delta_r < kDeltaRCut_) {
+          lepton_overlap_ = true;
           break;
         }      
       }
@@ -305,37 +306,36 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     /////////////////////////////////////////////
     // NOTE Fill tree
     ///////////////////////////////////////////////
-    m_pt = jet->PT;
-    m_eta = jet->Eta;
-    m_phi = jet->Phi;
+    pt_ = jet->PT;
+    eta_ = jet->Eta;
+    phi_ = jet->Phi;
 
-    m_parton_id = matched_parton ? matched_parton->PID : 0;
+    parton_id_ = matched_parton ? matched_parton->PID : 0;
 
-    m_flavor_id = jet->Flavor;
-    m_flavor_algo_id = jet->FlavorAlgo;
-    m_flavor_phys_id = jet->FlavorPhys;
+    flavor_id_ = jet->Flavor;
+    flavor_algo_id_ = jet->FlavorAlgo;
+    flavor_phys_id_ = jet->FlavorPhys;
 
     FillDaughters(jet);
 
     ////////////////////////////////////////
     // 
     //////////////////////////////////////////////
-    std::tie(m_major_axis, m_minor_axis, std::ignore) = delphys::ComputeAxes(
-        m_dau_deta, m_dau_dphi, m_dau_pt);
+    std::tie(major_axis_, minor_axis_, std::ignore) = delphys::ComputeAxes(
+        dau_deta_, dau_dphi_, dau_pt_);
 
     // jet energy sharing variable
-    Float_t sum_pt = std::accumulate(m_dau_pt.begin(), m_dau_pt.end(), 0.0f);
+    Float_t sum_pt = std::accumulate(dau_pt_.begin(), dau_pt_.end(), 0.0f);
     Float_t sum_pt_squared = std::inner_product(
-        m_dau_pt.begin(), m_dau_pt.end(),
-        m_dau_pt.begin(), 0.0f);
+        dau_pt_.begin(), dau_pt_.end(), dau_pt_.begin(), 0.0f);
 
-    m_ptd = std::sqrt(sum_pt_squared) / sum_pt;
+    ptd_ = std::sqrt(sum_pt_squared) / sum_pt;
 
     MakeJetImage();
 
     // ExtractSatellites();
 
-    m_order++;
+    order_++;
 
     out_tree_->Fill();
   } // end loop over jets
@@ -351,16 +351,16 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
   auto jet2 = dynamic_cast<Jet*>(jets->At(1));
 
   // 2 jets of 30 GeV
-  if (jet1->PT < kMinJetPT) return false;
-  if (jet2->PT < kMinJetPT) return false;
+  if (jet1->PT < kMinJetPT_) return false;
+  if (jet2->PT < kMinJetPT_) return false;
 
   /***************************************************************************** 
    * The eta cut is there to match the tracker range (or should be around that),
    * if we discard one of the jets because of it, then, yes, the event should be
    * discarded.
    ****************************************************************************/
-  if (std::fabs(jet1->Eta) > kMaxJetEta) return false;
-  if (std::fabs(jet2->Eta) > kMaxJetEta) return false;
+  if (std::fabs(jet1->Eta) > kMaxJetEta_) return false;
+  if (std::fabs(jet2->Eta) > kMaxJetEta_) return false;
 
   // that are back-to-back
   if (jet1->P4().DeltaPhi(jet2->P4()) < kDeltaPhiCut_) return false;
@@ -390,8 +390,8 @@ Bool_t QGJetsAnalyser::PassZjets(TClonesArray* jets,
   Int_t idx_max_pt = -1;
   for (Int_t idx_jet = 0; idx_jet < jets_->GetEntries(); ++idx_jet) {
     auto jet = dynamic_cast<const Jet*>(jets->At(idx_jet));
-    if (jet->PT < kMinJetPT) continue;
-    if (std::fabs(jet->Eta) > kMaxJetEta) continue;
+    if (jet->PT < kMinJetPT_) continue;
+    if (std::fabs(jet->Eta) > kMaxJetEta_) continue;
 
     // FIXME m_num_good_jets++;
     if (max_pt < jet->PT) {
@@ -452,53 +452,53 @@ void QGJetsAnalyser::FillDaughters(const Jet* jet) {
     TObject* daughter = jet->Constituents.At(idx_dau);
 
     if (auto tower = dynamic_cast<Tower*>(daughter)) {
-      m_num_dau++;
+      num_dau_++;
       deta = tower->Eta - jet->Eta;
       dphi = tower->P4().DeltaPhi(jet_p4);
 
-      m_dau_p4.push_back(tower->P4());
-      m_dau_pt.push_back(tower->ET);
-      m_dau_deta.push_back(deta);
-      m_dau_dphi.push_back(dphi);
-      m_dau_charge.push_back(0);
+      dau_p4_.push_back(tower->P4());
+      dau_pt_.push_back(tower->ET);
+      dau_deta_.push_back(deta);
+      dau_dphi_.push_back(dphi);
+      dau_charge_.push_back(0);
 
       if (tower->Eem == 0.0) {
-        m_nhad_mult++;
-        m_dau_is_hadronic.push_back(true);
-        m_dau_pid.push_back(0); // Neutral hadron
+        nhad_mult_++;
+        dau_is_hadronic_.push_back(true);
+        dau_pid_.push_back(0); // Neutral hadron
       } else if (tower->Ehad == 0.0) {
-        m_photon_mult++;
-        m_dau_is_hadronic.push_back(false); // leptonic
-        m_dau_pid.push_back(kPhotonPID);
+        photon_mult_++;
+        dau_is_hadronic_.push_back(false); // leptonic
+        dau_pid_.push_back(kPhotonPID_);
       } else {
           std::cout << "ERROR: Tower with Had " << tower->Ehad
                     << " and EM " << tower->Eem << " energy" << std::endl;
       }    
 
-      m_dau_is_track.push_back(false);
-      m_dau_eemfrac.push_back(tower->Eem / tower->E);
-      m_dau_ehadfrac.push_back(tower->Ehad / tower->E);
+      dau_is_track_.push_back(false);
+      dau_eemfrac_.push_back(tower->Eem / tower->E);
+      dau_ehadfrac_.push_back(tower->Ehad / tower->E);
 
     } else if (auto track = dynamic_cast<Track*>(daughter)) {
-      m_num_dau++;
+      num_dau_++;
       deta = track->Eta - jet->Eta;
       dphi = track->P4().DeltaPhi(jet_p4);
 
-      m_dau_p4.push_back(track->P4());
-      m_dau_pt.push_back(track->PT);
-      m_dau_deta.push_back(deta);
-      m_dau_dphi.push_back(dphi);
-      m_dau_charge.push_back(track->Charge);
-      m_dau_pid.push_back(track->PID);
-      m_dau_is_hadronic.push_back(false);
-      m_dau_is_track.push_back(true);
-      m_dau_eemfrac.push_back(0.0);
-      m_dau_ehadfrac.push_back(0.0);
+      dau_p4_.push_back(track->P4());
+      dau_pt_.push_back(track->PT);
+      dau_deta_.push_back(deta);
+      dau_dphi_.push_back(dphi);
+      dau_charge_.push_back(track->Charge);
+      dau_pid_.push_back(track->PID);
+      dau_is_hadronic_.push_back(false);
+      dau_is_track_.push_back(true);
+      dau_eemfrac_.push_back(0.0);
+      dau_ehadfrac_.push_back(0.0);
 
       Int_t abs_pid = std::abs(track->PID);
-      if (abs_pid == kElectronPID)  m_electron_mult++;
-      else if (abs_pid == kMuonPID) m_muon_mult++;
-      else                          m_chad_mult++;
+      if (abs_pid == kElectronPID_)  electron_mult_++;
+      else if (abs_pid == kMuonPID_) muon_mult_++;
+      else                           chad_mult_++;
 
     } else {
       std::cout << "BAD DAUGHTER! " << daughter << std::endl;
@@ -510,12 +510,10 @@ void QGJetsAnalyser::FillDaughters(const Jet* jet) {
 
 Int_t QGJetsAnalyser::Pixelate(Float_t deta,
                                Float_t dphi,
-                               Float_t deta_max,
-                               Float_t dphi_max, 
                                Int_t num_deta_bins,
                                Int_t num_dphi_bins) {
-  Int_t eta_idx = static_cast<Int_t>(num_deta_bins * (deta + deta_max) / (2 * deta_max));
-  Int_t phi_idx = static_cast<Int_t>(num_dphi_bins * (dphi + dphi_max) / (2 * dphi_max));
+  Int_t eta_idx = Int_t(num_deta_bins * (deta + kImageDeltaEtaMax_) / (2 * kImageDeltaEtaMax_));
+  Int_t phi_idx = Int_t(num_dphi_bins * (dphi + kImageDeltaPhiMax_) / (2 * kImageDeltaPhiMax_));
   Int_t idx = num_deta_bins * eta_idx + phi_idx;
   return idx;
 }
@@ -523,33 +521,33 @@ Int_t QGJetsAnalyser::Pixelate(Float_t deta,
 void QGJetsAnalyser::MakeJetImage() {
   Float_t deta, dphi, pt;
   Int_t pixel;
-  for (Int_t idx_dau = 0; idx_dau < m_num_dau; idx_dau++) {
-    deta = m_dau_deta.at(idx_dau);
-    dphi = m_dau_dphi.at(idx_dau);
+  for (Int_t idx_dau = 0; idx_dau < num_dau_; idx_dau++) {
+    deta = dau_deta_.at(idx_dau);
+    dphi = dau_dphi_.at(idx_dau);
 
-    if (std::fabs(deta) >= kImageDeltaEtaMax) continue;
-    if (std::fabs(dphi) >= kImageDeltaPhiMax) continue;
+    if (std::fabs(deta) >= kImageDeltaEtaMax_) continue;
+    if (std::fabs(dphi) >= kImageDeltaPhiMax_) continue;
 
     pixel = Pixelate(deta, dphi);
 
-    pt = m_dau_pt.at(idx_dau);
-    Int_t abs_pid = std::abs(m_dau_pid.at(idx_dau));
+    pt = dau_pt_.at(idx_dau);
+    Int_t abs_pid = std::abs(dau_pid_.at(idx_dau));
 
-    if (abs_pid == kElectronPID) {
-      m_image_electron_pt_33[pixel] += pt;
-      m_image_electron_mult_33[pixel] += 1.0f;
-    } else if (abs_pid == kMuonPID) {
-      m_image_muon_pt_33[pixel] += pt;
-      m_image_muon_mult_33[pixel] += 1.0f;
-    } else if (abs_pid == kPhotonPID) {
-      m_image_photon_pt_33[pixel] += pt;
-      m_image_photon_mult_33[pixel] += 1.0f;
+    if (abs_pid == kElectronPID_) {
+      image_electron_pt_33_[pixel] += pt;
+      image_electron_mult_33_[pixel] += 1.0f;
+    } else if (abs_pid == kMuonPID_) {
+      image_muon_pt_33_[pixel] += pt;
+      image_muon_mult_33_[pixel] += 1.0f;
+    } else if (abs_pid == kPhotonPID_) {
+      image_photon_pt_33_[pixel] += pt;
+      image_photon_mult_33_[pixel] += 1.0f;
     } else if (abs_pid == 0) {
-      m_image_nhad_pt_33[pixel] += pt;
-      m_image_nhad_mult_33[pixel] += 1.0f;
+      image_nhad_pt_33_[pixel] += pt;
+      image_nhad_mult_33_[pixel] += 1.0f;
     } else {
-      m_image_chad_pt_33[pixel] += pt;
-      m_image_chad_mult_33[pixel] += 1.0f;
+      image_chad_pt_33_[pixel] += pt;
+      image_chad_mult_33_[pixel] += 1.0f;
     }
   } // end loop over daughters
 }
