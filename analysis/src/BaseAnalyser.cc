@@ -56,7 +56,7 @@ BaseAnalyser::~BaseAnalyser() {
 }
 
 
-void BaseAnalyser::InitDelphesBranch() {
+void BaseAnalyser::initDelphesBranch() {
   events_ = nullptr;
   particles_ = nullptr;
   gen_jets_ = nullptr;
@@ -77,8 +77,8 @@ void BaseAnalyser::InitDelphesBranch() {
 }
 
 
-void BaseAnalyser::SetBranchAddress(std::set<TString> branches, Bool_t drop) {
-  InitDelphesBranch();
+void BaseAnalyser::setBranchAddress(std::set<TString> branches, Bool_t drop) {
+  initDelphesBranch();
 
   std::set<TString> in_branches;
 
@@ -132,6 +132,6 @@ void BaseAnalyser::SetBranchAddress(std::set<TString> branches, Bool_t drop) {
 }
 
 
-void BaseAnalyser::SetBranchAddress() {
-  SetBranchAddress(kAllDelphesBranches);
+void BaseAnalyser::setBranchAddress() {
+  setBranchAddress(kAllDelphesBranches);
 }

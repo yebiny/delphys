@@ -3,38 +3,40 @@
 
 #include "delphys/external/interface/MathUtils.h"
 
+#include "classes/DelphesClasses.h"
+
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TClonesArray.h"
 #include "TString.h"
 
-#include "classes/DelphesClasses.h"
-
 #include <set>
-
 
 
 class BaseAnalyser {
  public:
   BaseAnalyser();
 
+  // constructor when cloning Delphes' tree
   BaseAnalyser(const TString & in_path,
                const TString & out_path);
 
+  //
   BaseAnalyser(const TString & in_path,
                const TString & out_path,
                const TString & out_tree_name);
 
+  //
   BaseAnalyser(const std::vector<TString> & in_paths,
                const TString & out_path,
                const TString & out_tree_name);
 
   ~BaseAnalyser();
 
-  void InitDelphesBranch();
-  void SetBranchAddress(std::set<TString> branches, Bool_t drop=false);
-  void SetBranchAddress();
+  void initDelphesBranch();
+  void setBranchAddress(std::set<TString> branches, Bool_t drop=false);
+  void setBranchAddress();
 
   TFile *in_file_, *out_file_;
   TTree *in_tree_, *out_tree_;
@@ -61,7 +63,8 @@ class BaseAnalyser {
       "Event", "Particle", "GenJet", "GenMissingET",
       "Track", "Tower", "EFlowTrack", "EFlowPhoton", "EFlowNeutralHadron",
       "Electron", "Photon", "Muon",
-      "Jet", "FatJet", "MissingET", "ScalarHT", "Vertex"};
+      "Jet", "FatJet", "MissingET", "ScalarHT", "Vertex"
+  };
 
 };
 
