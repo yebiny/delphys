@@ -44,26 +44,28 @@ class BaseAnalyser {
   void setBranchAddress(std::set<TString> branches, Bool_t drop=false);
   void setBranchAddress();
 
-  TFile *in_file_, *out_file_;
-  TTree *in_tree_, *out_tree_;
+  TFile* in_file_,
+  TFile* out_file_;
+  TTree* in_tree_,
+  TFile* out_tree_;
 
-  TClonesArray *events_;
-  TClonesArray *particles_; // GenParticle
-  TClonesArray *gen_jets_;  // 
-  TClonesArray *gen_mets_;
-  TClonesArray *tracks_;
-  TClonesArray *towers_;
-  TClonesArray *eflow_tracks_;
-  TClonesArray *eflow_photons_;
-  TClonesArray *eflow_neutral_hadrons_;
-  TClonesArray *electrons_;
-  TClonesArray *muons_;
-  TClonesArray *photons_;
-  TClonesArray *jets_;
-  TClonesArray *fat_jets_;
-  TClonesArray *mets_;
-  TClonesArray *scalar_hts_;
-  TClonesArray *vertices_;
+  TClonesArray* events_;
+  TClonesArray* particles_; // GenParticle
+  TClonesArray* gen_jets_;  // 
+  TClonesArray* gen_mets_;
+  TClonesArray* tracks_;
+  TClonesArray* towers_;
+  TClonesArray* eflow_tracks_;
+  TClonesArray* eflow_photons_;
+  TClonesArray* eflow_neutral_hadrons_;
+  TClonesArray* electrons_;
+  TClonesArray* muons_;
+  TClonesArray* photons_;
+  TClonesArray* jets_;
+  TClonesArray* fat_jets_;
+  TClonesArray* mets_;
+  TClonesArray* scalar_hts_;
+  TClonesArray* vertices_;
 
   const std::set<TString> kAllDelphesBranches_ = {
       "Event", "Particle", "GenJet", "GenMissingET",
