@@ -78,17 +78,13 @@ TTAllJetsSelector::~TTAllJetsSelector() {
 
 
 Bool_t TTAllJetsSelector::selectEvent() {
-  // FIXME
-  // http://home.thep.lu.se/~torbjorn/pythia82html/ParticleProperties.html
-
   // Find top quarks
   std::vector<GenParticle*> top_quarks;
   for (Int_t idx = 0; idx <= particles_->GetEntries(); idx++) {
     auto p = dynamic_cast<GenParticle*>(particles_->At(idx));
-    if ((std::abs(p->PID) == 6) and (p->Status == 62)) {
+    if ((std::abs(p->PID) == pdgid::kTop) and (p->Status == p8status::kTop)) {
       top_quarks.push_back(p);
     }
-    // NOTE Assume
     if (top_quarks.size() == 2) break;
   }
 
@@ -97,23 +93,19 @@ Bool_t TTAllJetsSelector::selectEvent() {
     // top daughters
     for (Int_t dau_idx = top->D1; dau_idx <= top->D2; dau_idx++) {
       auto dau = dynamic_cast<GenParticle*>(particles_->At(dau_idx));
-      Int_t pid = std::abs(dau->PID);
+      Int_t abs_pid = std::abs(dau->PID);
 
-      if (pid == 24) {
+      if (abs_pid == pdgid::kWBoson) {
         for (Int_t i = dau->D1; i <= dau->D2; i++) {
           daughter_indices.push(i);
         }
-      } else if (pid != 5) {
+      } else if (abs_pid != pdgid::kBottom) {
         std::cout << top->PID << " --> " << dau->PID << std::endl;
       } 
     }
   }
 
 
-  static const std::set<Int_t> kPassPID = {
-      1, 2, 3, 4, 5,
-      12, 14, 16
-  };
 
 
   Int_t num_electrons = 0, num_muons = 0, num_taus = 0;
@@ -122,15 +114,15 @@ Bool_t TTAllJetsSelector::selectEvent() {
     Int_t idx = daughter_indices.front();
     daughter_indices.pop();
     auto p = dynamic_cast<GenParticle*>(particles_->At(idx));
-    Int_t pid = std::abs(p->PID);
+    Int_t abs_pid = std::abs(p->PID);
 
-    if (pid == 11) {
+    if (abs_pid == pdgid::kElectron) {
       num_electrons++;
-    } else if (pid == 13) {
+    } else if (abs_pid == pdgid::kMuon) {
       num_muons++;
-    } else if (pid == 15) {
+    } else if (abs_pid == pdgid::kTau) {
       num_taus++;
-    } else if (std::find(kPassPID.begin(), kPassPID.end(), pid) != kPassPID.end()) {
+    } else if (std::find(kSkipPID.begin(), kSkipPID.end(), abs_pid) != kSkipPID.end()) {
       continue;
     } else {
       for (Int_t dau_idx = p->D1; dau_idx <= p->D2; dau_idx++) {
@@ -179,6 +171,3 @@ void TTAllJetsSelector::Loop() {
     }
   }
 }
-
-
-
