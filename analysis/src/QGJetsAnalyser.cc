@@ -28,7 +28,7 @@ QGJetsAnalyser::QGJetsAnalyser(const TString & in_path,
 
   //
   setBranchAddress({"Vertex"}, /*drop=*/true);
-  MakeBranch();
+  makeBranch();
 
   //
   std::cout << "Input file: " << in_path << std::endl;
@@ -55,11 +55,11 @@ QGJetsAnalyser::~QGJetsAnalyser() {
   std::cout << "dtor end" << std::endl;
 }
 
-void QGJetsAnalyser::MakeBranch() {
+void QGJetsAnalyser::makeBranch() {
   std::cout << "MakeBranch begin" << std::endl;
 
-  ResetOnEachEvent();
-  ResetOnEachJet();
+  resetOnEachEvent();
+  resetOnEachJet();
 
   #define BRANCH_(name, suffix) out_tree_->Branch(#name, & name##_, #name "/" #suffix);
   #define BRANCH_I(name) BRANCH_(name, I);
@@ -101,7 +101,6 @@ void QGJetsAnalyser::MakeBranch() {
   BRANCH_I(flavor_algo_id)
   BRANCH_I(flavor_phys_id)
 
-
   out_tree_->Branch("dau_p4", &dau_p4_);
   BRANCH_VF(dau_pt)
   BRANCH_VF(dau_deta)
@@ -138,7 +137,7 @@ void QGJetsAnalyser::MakeBranch() {
   std::cout << "MakeBranch end" << std::endl;
 }
 
-void QGJetsAnalyser::ResetOnEachEvent() {
+void QGJetsAnalyser::resetOnEachEvent() {
   event_ = 0; // nEvent
   num_jets_ = 0; // nJets
   num_good_jets_ = 0; // nGoodJets
@@ -147,7 +146,7 @@ void QGJetsAnalyser::ResetOnEachEvent() {
 }
 
 
-void QGJetsAnalyser::ResetOnEachJet() {
+void QGJetsAnalyser::resetOnEachJet() {
   // NOTE label do not need to be reset.
 
   pt_ = 0.0f;
@@ -199,13 +198,13 @@ void QGJetsAnalyser::ResetOnEachJet() {
 }
 
 
-Bool_t QGJetsAnalyser::SelectEvent() {
-  if (kIsDijet) return IsBalanced(jets_);
-  else          return PassZjets(jets_, muons_, electrons_);
+Bool_t QGJetsAnalyser::selectEvent() {
+  if (kIsDijet) return isBalanced(jets_);
+  else          return passZjets(jets_, muons_, electrons_);
 }
 
 
-void QGJetsAnalyser::Analyse(Int_t entry) {
+void QGJetsAnalyser::analyse(Int_t entry) {
   event_ = entry; 
   num_jets_ = jets_->GetEntries();
   // TODO m_good_jets
@@ -235,7 +234,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
   //////////////////////////////////////////////////////////////////////////////
   Int_t max_jet_idx = kIsDijet ? 2 : 1;
   for (Int_t idx_jet = 0; idx_jet < max_jet_idx; idx_jet++) {
-    ResetOnEachJet();
+    resetOnEachJet();
 
     // if (kIsDijet and idx_jet >= 2) continue;
     // if ((not kIsDijet) and idx_jet >= 1) continue;
@@ -316,7 +315,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
     flavor_algo_id_ = jet->FlavorAlgo;
     flavor_phys_id_ = jet->FlavorPhys;
 
-    FillDaughters(jet);
+    fillDaughters(jet);
 
     ////////////////////////////////////////
     // 
@@ -331,7 +330,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
 
     ptd_ = std::sqrt(sum_pt_squared) / sum_pt;
 
-    MakeJetImage();
+    makeJetImage();
 
     // ExtractSatellites();
 
@@ -344,7 +343,7 @@ void QGJetsAnalyser::Analyse(Int_t entry) {
 
 /* Is the event balanced according to the criteria of pg 13 of
    http://cds.cern.ch/record/2256875/files/JME-16-003-pas.pdf */
-Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
+Bool_t QGJetsAnalyser::isBalanced(TClonesArray* jets) {
   if (jets->GetEntries() < 2) return false;
 
   auto jet1 = dynamic_cast<Jet*>(jets->At(0));
@@ -376,7 +375,7 @@ Bool_t QGJetsAnalyser::IsBalanced(TClonesArray* jets) {
 
 /* Does the event pass the Zjets criteria according to the criteria of pg 11-12
    of http://cds.cern.ch/record/2256875/files/JME-16-003-pas.pdf */
-Bool_t QGJetsAnalyser::PassZjets(TClonesArray* jets,
+Bool_t QGJetsAnalyser::passZjets(TClonesArray* jets,
                                  TClonesArray* muons,
                                  TClonesArray* electrons) {
 
@@ -443,7 +442,7 @@ Bool_t QGJetsAnalyser::PassZjets(TClonesArray* jets,
   return pass_zjets;
 }
 
-void QGJetsAnalyser::FillDaughters(const Jet* jet) {
+void QGJetsAnalyser::fillDaughters(const Jet* jet) {
   TLorentzVector jet_p4 = jet->P4();
 
   Int_t num_daughters = jet->Constituents.GetEntries();
@@ -508,7 +507,7 @@ void QGJetsAnalyser::FillDaughters(const Jet* jet) {
 
 }
 
-Int_t QGJetsAnalyser::Pixelate(Float_t deta,
+Int_t QGJetsAnalyser::pixelate(Float_t deta,
                                Float_t dphi,
                                Int_t num_deta_bins,
                                Int_t num_dphi_bins) {
@@ -518,7 +517,7 @@ Int_t QGJetsAnalyser::Pixelate(Float_t deta,
   return idx;
 }
 
-void QGJetsAnalyser::MakeJetImage() {
+void QGJetsAnalyser::makeJetImage() {
   Float_t deta, dphi, pt;
   Int_t pixel;
   for (Int_t idx_dau = 0; idx_dau < num_dau_; idx_dau++) {
@@ -528,7 +527,7 @@ void QGJetsAnalyser::MakeJetImage() {
     if (std::fabs(deta) >= kImageDeltaEtaMax_) continue;
     if (std::fabs(dphi) >= kImageDeltaPhiMax_) continue;
 
-    pixel = Pixelate(deta, dphi);
+    pixel = pixelate(deta, dphi);
 
     pt = dau_pt_.at(idx_dau);
     Int_t abs_pid = std::abs(dau_pid_.at(idx_dau));
@@ -554,26 +553,22 @@ void QGJetsAnalyser::MakeJetImage() {
 
 
 void QGJetsAnalyser::Loop() {
-  const Int_t kNumEntries = in_tree_->GetEntries();
-  const Int_t kPrintFreq = kNumEntries / 20;
-  TString kMsg = "[%d/%d (%.2f %)]";
+  const Int_t kNumTotal = in_tree_->GetEntries();
+  const Int_t kPrintFreq = kNumTotal / 20;
+  TString msg_fmt = TString::Format("[%s/%d (%s %%)]", "%d", kNumTotal, "%.2f");
 
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
     in_tree_->GetEntry(entry);
 
     if (entry % kPrintFreq == 0) {
-
-      std::cout << TString::Format(kMsg, entry + 1, kNumEntries,
-                                   100 * Float_t(entry + 1) / kNumEntries)
-                << std::endl;
-        
+      Float_t progress = 100 * Float_t(entry + 1) / kNumTotal;
+      std::cout << TString::Format(msg_fmt, entry + 1, progress) << std::endl;
     }
 
-
-    if (not SelectEvent()) continue;
+    if (not selectEvent()) continue;
 
     qgjets_stats_["num_passed_events"]++;
-    ResetOnEachEvent();
-    Analyse(entry);
+    resetOnEachEvent();
+    analyse(entry);
   }
 }

@@ -16,26 +16,26 @@ class QGJetsAnalyser : private BaseAnalyser {
 
  private:
   // inherited
-  void MakeBranch();
-  Bool_t SelectEvent();
-  void Analyse(Int_t entry);
-  void ResetOnEachJet();
-  void ResetOnEachEvent();
+  void makeBranch();
+  Bool_t selectEvent();
+  void analyse(Int_t entry);
+  void resetOnEachJet();
+  void resetOnEachEvent();
 
-  Bool_t PassZjets(TClonesArray* jets,
+  Bool_t passZjets(TClonesArray* jets,
                    TClonesArray* muons,
                    TClonesArray* electrons);
 
-  Bool_t IsBalanced(TClonesArray* jets);
+  Bool_t isBalanced(TClonesArray* jets);
 
-  void FillDaughters(const Jet* jet);
+  void fillDaughters(const Jet* jet);
 
-  Int_t Pixelate(Float_t deta, Float_t dphi,
+  Int_t pixelate(Float_t deta, Float_t dphi,
                  Int_t num_deta_bins=33, Int_t num_dphi_bins=33);
 
-  void MakeJetImage();
+  void makeJetImage();
 
-  Bool_t ExtractSatellites();
+  // Bool_t extractSatellites();
 
   //////////////////////////////////////////////////////////////////////////////
   // Branches of the output tree
