@@ -83,7 +83,7 @@ void BaseAnalyser::setBranchAddress(std::set<TString> branches, Bool_t drop) {
   std::set<TString> in_branches;
 
   if (drop) {
-    std::set_difference(kAllDelphesBranches.begin(), kAllDelphesBranches.end(), 
+    std::set_difference(kAllDelphesBranches_.begin(), kAllDelphesBranches_.end(), 
                         branches.begin(), branches.end(),
                         std::inserter(in_branches, in_branches.begin()));
   } else {
@@ -133,5 +133,5 @@ void BaseAnalyser::setBranchAddress(std::set<TString> branches, Bool_t drop) {
 
 
 void BaseAnalyser::setBranchAddress() {
-  setBranchAddress(kAllDelphesBranches);
+  setBranchAddress(kAllDelphesBranches_);
 }
