@@ -13,21 +13,27 @@
 
 #include <set>
 
+// TODO use enum??
+// enum class DelphesBranches {
+//   kEvent, kParticle, kGenJet, kGenMissingET,
+//   kTrack, kTower, kEFlowTrack, kEFlowPhoton, kEFlowNeutralHadron,
+//   kElectron, kPhoton, kMuon, kJet, kFatJet, kMissingET, kScalarHT, kVertex,
+// };
+
 
 class BaseAnalyser {
  public:
   BaseAnalyser();
 
-  // constructor when cloning Delphes' tree
+  // constructor to clone Delphes' tree
   BaseAnalyser(const TString & in_path,
                const TString & out_path);
 
-  //
   BaseAnalyser(const TString & in_path,
                const TString & out_path,
                const TString & out_tree_name);
 
-  //
+  // constructor for multiple input files
   BaseAnalyser(const std::vector<TString> & in_paths,
                const TString & out_path,
                const TString & out_tree_name);
@@ -59,7 +65,7 @@ class BaseAnalyser {
   TClonesArray *scalar_hts_;
   TClonesArray *vertices_;
 
-  const std::set<TString> kAllDelphesBranches = {
+  const std::set<TString> kAllDelphesBranches_ = {
       "Event", "Particle", "GenJet", "GenMissingET",
       "Track", "Tower", "EFlowTrack", "EFlowPhoton", "EFlowNeutralHadron",
       "Electron", "Photon", "Muon",
