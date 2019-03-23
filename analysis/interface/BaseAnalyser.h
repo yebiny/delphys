@@ -44,10 +44,10 @@ class BaseAnalyser {
   void setBranchAddress(std::set<TString> branches, Bool_t drop=false);
   void setBranchAddress();
 
-  TFile* in_file_,
+  TFile* in_file_;
   TFile* out_file_;
-  TTree* in_tree_,
-  TFile* out_tree_;
+  TTree* in_tree_;
+  TTree* out_tree_;
 
   TClonesArray* events_;
   TClonesArray* particles_; // GenParticle
