@@ -1,0 +1,14 @@
+<use name="delphys/external" />
+<use name="root"/>
+<use name="rootxml"/>
+  <lib name="Eve"/>
+  <lib name="EG"/>
+<flags CXXFLAGS="-g" />
+
+<export>
+  <lib name="1"/>
+</export>
+
+<flags CXXFLAGS="-I/cms/ldap_home/yyoun/delPhys/src/delphys/external/delphes"/>
+<flags CXXFLAGS="-L/cms/ldap_home/yyoun/delPhys/src/delphys/external/delphes"/>
+<flags CXXFLAGS="-lDelphes"/>
