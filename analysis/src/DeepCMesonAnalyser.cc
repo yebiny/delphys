@@ -1,13 +1,6 @@
 #include "delphys/analysis/interface/DeepCMesonAnalyser.h"
 #include "TLorentzVector.h"
 
-#include <algorithm> // std::fill
-#include <cmath> // std::abs, std::fabs, std::sqrt
-#include <tuple> // tie, ignore
-#include <iterator>
-#include <numeric> // std::accumulate, std::inner_product
-
-
 DeepCMesonAnalyser::DeepCMesonAnalyser(const TString & in_path,
                                        const TString & out_path,
                                        const TString & out_tree_name):
