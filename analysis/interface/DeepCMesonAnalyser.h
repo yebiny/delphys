@@ -10,7 +10,7 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
                             const TString & out_path,
                             const TString & out_tree_name);
         ~DeepCMesonAnalyser();
-        void Loop();
+        void loop();
 
 
     private:

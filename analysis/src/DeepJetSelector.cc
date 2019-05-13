@@ -63,7 +63,7 @@ void DeepJetSelector::analyse(Int_t entry) {
     }
 }
 
-void DeepJetSelector::Loop() {
+void DeepJetSelector::loop() {
 
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
     in_tree_->GetEntry(entry);

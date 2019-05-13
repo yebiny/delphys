@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
   TString out_path(argv[2]);
 
   DeepCMesonAnalyser analyser(in_path, out_path, "delphys");
-  analyser.Loop();
+  analyser.loop();
  
   return 0;
 }

@@ -176,7 +176,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
 }
 
 
-void DeepCMesonAnalyser::Loop() {
+void DeepCMesonAnalyser::loop() {
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
     in_tree_->GetEntry(entry);
     //if (not selectEvent()) continue;

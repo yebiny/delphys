@@ -13,7 +13,7 @@ class DeepJetSelector{
                          const TString & out_path   
                        );
         ~DeepJetSelector();
-        void Loop();
+        void loop();
 
     private:
         void analyse(Int_t entry);

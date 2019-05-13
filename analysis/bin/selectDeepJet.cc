@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
 
     DeepJetSelector analyser(in_path, out_path);
-    analyser.Loop();
+    analyser.loop();
 
     return 0;
 
