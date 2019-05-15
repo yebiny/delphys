@@ -14,9 +14,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.utils.class_weight import compute_class_weight
 from pprint import pprint
 
-#!scp ui20:/cms/ldap_home/yyoun/delPhys/src/TestDeepCMeson/3-Dataset/*.root .
-
 class CMesonDataset(Sequence):
+
     def __init__(self, path, batch_size):
         self.root_file = ROOT.TFile(path)
         self.tree = self.root_file.delphys
@@ -24,23 +23,18 @@ class CMesonDataset(Sequence):
         self.batch_size = batch_size
         
     def __len__(self):
-        '''return steps per epoch'''
-        # discart last 
         return int(self.num_entries / float(self.batch_size))
 
     def __getitem__(self, index):
-        # self.x[idx * self.batch_size: (idx + 1) * self.batch_size]
         start = index * self.batch_size
         end = (index + 1) * self.batch_size
         
         x = []
         y = []
-       
 
         for entry in range(start, end):
                        
             self.tree.GetEntry(entry)
-        
             dau_pt = np.array(list(self.tree.track_pt), dtype=np.float32)
             dau_deta = np.array(list(self.tree.track_deta), dtype=np.float32)
             dau_dphi = np.array(list(self.tree.track_dphi), dtype=np.float32)
@@ -81,28 +75,18 @@ class CMesonDataset(Sequence):
                     dau_set[-1].append(dau_yd[i])
                     dau_set[-1].append(dau_zd[i])
          
-            #print "dau_set:"
-            #print dau_set
-            
-        
             x.append(dau_set)
-            
-            # label = 1 if int(self.tree.jet_label_d0) == 1 else 0
-            #label = self.tree.jet_label_d0
             
             if (self.tree.jet_label_d0 ==1): label = 1
             else : label = 0
-            #print(self.tree.jet_label_d0, label)                
-
+            
             y.append(label)
 
-        
         x = keras.preprocessing.sequence.pad_sequences(x, maxlen=15, padding='post', truncating='post', dtype=np.float32)
         y = np.array(y)
         
         return x, y
     
-
 def get_datasets():        
     datasets = [
         CMesonDataset("../2-Selector/reout1.root", batch_size=256),
@@ -111,23 +95,15 @@ def get_datasets():
     ]
     
     trainset, valset, testset = sorted(datasets, key=lambda dset: len(dset), reverse=True)
-   
-    
-    print("Train Set : ",trainset, len(trainset) )
-    print("Test Set : ",testset, len(testset) )
-    print("Val Set : ",valset, len(valset) )
-    
     return trainset, valset, testset
-
 
 def main():
     train_set, val_set, test_set = get_datasets()
-    print("-------------------Train Set-----------------------")
-    print( train_set[0])
-    #print( "-------------------Validation Set-----------------------")
-    #print( val_set[0])
-    #print( "-------------------Test Set-----------------------")
-    #print( test_set[0])
-    
+
+    print("Train Set : ",trainset, len(trainset) )
+    print("Test Set : ",testset, len(testset) )
+    print("Val Set : ",valset, len(valset) )
+    #print( train_set[0])
+
 if __name__ == '__main__':
     main()
