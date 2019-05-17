@@ -3,7 +3,6 @@
 
 #include "delphys/analysis/interface/BaseAnalyser.h"
 
-
 class DeepCMesonAnalyser : private BaseAnalyser  {
     public:
         DeepCMesonAnalyser( const TString & in_path,
@@ -12,45 +11,43 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         ~DeepCMesonAnalyser();
         void loop();
 
-
     private:
         void makeBranch();
-        //Bool_t selectEvent();
         void analyse(Int_t entry);
         void resetOnEachJet();
-        //void resetOnEachEvent();
 
-        std::vector<Float_t>        track_pt_;
         std::vector<Float_t>        track_deta_;
         std::vector<Float_t>        track_dphi_;
-        std::vector<Int_t>          track_charge_;
-        std::vector<Int_t>          track_pid_;
-       
+        std::vector<Float_t>        track_pt_;
         std::vector<Float_t>        track_d0_;
         std::vector<Float_t>        track_dz_;
-        std::vector<Float_t>        track_l_;
         std::vector<Float_t>        track_xd_;
         std::vector<Float_t>        track_yd_;
         std::vector<Float_t>        track_zd_;
+       
+        std::vector<Float_t>        track_l_;
+        std::vector<Int_t>          track_charge_;
+        std::vector<Int_t>          track_pId_;
 
-
-
-        std::vector<Float_t>        tower_pt_;
-        std::vector<Float_t>        tower_deta_;
-        std::vector<Float_t>        tower_dphi_;
-        std::vector<Int_t>          tower_charge_;
+        std::vector<Int_t>          track_costompId_;
+        std::vector<Int_t>          mother_pId_;
         
-        std::vector<Int_t>          Dau_jpsi_;
-        std::vector<Int_t>          Dau_d0_;
-        std::vector<Int_t>          Dau_M1_;
+        std::vector<Int_t>          pticle_is_d0dau_; 
+        std::vector<Int_t>          pticle_is_pion_;
+        std::vector<Int_t>          pticle_is_kaon_;
         
+        std::vector<Int_t>          pticle_label_;
+        Int_t                       jet_label_;
+        Int_t                       jet_num_d0dau_;
+        Int_t                       jet_num_track_;
         
-        Int_t jet_label_d0_;
-        Int_t jet_label_jpsi_;
-        Int_t num_d0Dau_;
-        Int_t num_jpsiDau_;
-        
-
+        Int_t                       pion_cand_;
+        Int_t                       kaon_cand_;
+        std::vector<Int_t>          pion_charge_;
+        std::vector<Int_t>          kaon_charge_;
+       
+        static const int pion_pId_ = 211, kaon_pId_ = 321;
+        static const int d0_pId_ = 421;   
 };
 
 #endif
