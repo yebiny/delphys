@@ -4,7 +4,12 @@
 DeepCMesonAnalyser::DeepCMesonAnalyser(const TString & in_path,
                                        const TString & out_path,
                                        const TString & out_tree_name):
-    BaseAnalyser(in_path, out_path, out_tree_name) {
+    BaseAnalyser(in_path, out_path, out_tree_name),
+    jet_label_(-1), 
+    jet_num_d0dau_(0),
+    jet_num_track_(0),
+    pion_cand_(0),
+    kaon_cand_(0){
     setBranchAddress({"Vertex"},true);
     makeBranch();
 }    
@@ -14,6 +19,7 @@ DeepCMesonAnalyser::~DeepCMesonAnalyser() {
     out_file_->Write();
     out_file_->Close();
 }
+
 
 void DeepCMesonAnalyser::makeBranch() {
     std::cout << "Make Branch Begin" << std::endl;
@@ -28,6 +34,7 @@ void DeepCMesonAnalyser::makeBranch() {
     out_tree_->Branch("track_xd", "std::vector<float>", &track_xd_);
     out_tree_->Branch("track_yd", "std::vector<float>", &track_yd_);
     out_tree_->Branch("track_zd", "std::vector<float>", &track_zd_);
+    out_tree_->Branch("track_errd0", "std::vector<float>", &track_errd0_);
     
     out_tree_->Branch("track_charge", "std::vector<int>", &track_charge_);
     out_tree_->Branch("track_pId", "std::vector<int>", &track_pId_);
@@ -67,6 +74,7 @@ void DeepCMesonAnalyser::resetOnEachJet() {
     track_xd_.clear();
     track_yd_.clear();
     track_zd_.clear();    
+    track_errd0_.clear();
    
     track_costompId_.clear();
     mother_pId_.clear();
@@ -79,6 +87,7 @@ void DeepCMesonAnalyser::resetOnEachJet() {
     kaon_charge_.clear();
 
     pticle_label_.clear();    
+    
     jet_label_ = -1; 
     jet_num_d0dau_ = 0;
     jet_num_track_ = 0;
@@ -98,9 +107,14 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
 
             // We need only track particles
             if (auto track = dynamic_cast<Track*>(daughter)) {
-                jet_num_track_ = jet_num_track_ + 1;
+                
+                // Particle selection  
+                if (abs(track->Eta) > 2.4) continue;
+                if (abs(track->PT) < 20) continue;
 
                 // Save all track informations
+                jet_num_track_ = jet_num_track_ + 1;
+                
                 deta = track->Eta - jet->Eta;
                 dphi = track->P4().DeltaPhi(jet_p4);
                 
@@ -112,6 +126,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 track_xd_.push_back(track->Xd);
                 track_yd_.push_back(track->Yd);
                 track_zd_.push_back(track->Zd);
+                track_errd0_.push_back(track->ErrorD0);
                 
                 track_charge_.push_back(track->Charge);
                 track_pId_.push_back(track->PID);
@@ -192,21 +207,6 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         }
     }
         
-    //    if (
-    //     // Minimum number of D0 daughters   
-    //     (jet_num_d0dau_ >= 2) and 
-    //     // Only a pion and a kaon
-    //     ((pion_cand_ == 1) and (kaon_cand_ ==1))
-    //     // Have opposit sign
-    //     ((pion_charge_[0] * kaon_charge_[0]) == -1) 
-    //   ) {            
-    //    jet_label_ = 1; 
-
-    //} else { 
-    //    jet_label_ = 0;
-    //    replace(pticle_label_.begin(), pticle_label_.end(), 1,  0); 
-    //}
-    
     // Fill tree
     out_tree_->Fill();
     } //jet
