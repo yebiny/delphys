@@ -6,12 +6,13 @@
 #include <tuple> // tie, ignore
 #include <iterator>
 #include <numeric> // std::accumulate, std::inner_product
-
 #include <iostream>
 
 DeepJetSelector::DeepJetSelector(const TString & in_path,
-                                 const TString & out_path
+                                 const TString & out_path,
+                                 const Int_t & ratio
                                  ) :
+  num_bkg_random_(0),
   num_bkg_d0_(0),
   num_sig_d0_(0){
 
@@ -27,46 +28,39 @@ DeepJetSelector::DeepJetSelector(const TString & in_path,
     std::cout << "ctor end" << std::endl;
 }
 
-
-DeepJetSelector::~DeepJetSelector() {
+DeepJetSelector::~DeepJetSelector(){
     std::cout << "dtor begin" << std::endl;
     out_tree_->Print();
     out_file_->Write();
     out_file_->Close();
     std::cout << "dtor end" << std::endl;
-
 }
 
-
-void DeepJetSelector::setBranchAddress() {
+void DeepJetSelector::setBranchAddress(){
     std::cout << "setbranch begin" << std::endl;
-    in_tree_->SetBranchAddress("jet_label_d0", &jet_label_d0_);
+    in_tree_->SetBranchAddress("jet_label", &jet_label_);
     std::cout << "setbranch end" << std::endl;
 }
 
+void DeepJetSelector::analyse(Int_t entry, Int_t ratio){
 
-void DeepJetSelector::analyse(Int_t entry) {
-    
-    if (jet_label_d0_ == 1) { 
+    if (jet_label_ == 3){ 
         out_tree_->Fill();
         num_sig_d0_++;
-            if (num_bkg_d0_%5000 == 0)
-            std::cout << "!!SIG!!"<<num_sig_d0_ << std::endl;
-    }
-    else {
+            if (num_sig_d0_ % 10 == 0)
+            std::cout << "!!SIG!!" << num_sig_d0_ << "and" << "!!BKG!!" << num_bkg_d0_ << "->" << num_bkg_random_ << std::endl;
+    }else{
         num_bkg_d0_++;
-        if (num_bkg_d0_% 23 == 0){
+        if (num_bkg_d0_ % ratio == 0){
+            num_bkg_random_++;
             out_tree_->Fill();
-            //std::cout << "!!BKG!!"<<num_bkg_d0_ << std::endl;
         }
-       
     }
 }
 
-void DeepJetSelector::loop() {
-
+void DeepJetSelector::loop(Int_t ratio){
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
-    in_tree_->GetEntry(entry);
-    analyse(entry);
+    in_tree_->GetEntry(entry,ratio);
+    analyse(entry,ratio);
   }
 }
