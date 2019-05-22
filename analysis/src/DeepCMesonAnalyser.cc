@@ -8,8 +8,8 @@ DeepCMesonAnalyser::DeepCMesonAnalyser(const TString & in_path,
     jet_label_(-1), 
     jet_num_d0dau_(0),
     jet_num_track_(0),
-    pion_cand_(0),
-    kaon_cand_(0){
+    num_pion_cand_(0),
+    num_kaon_cand_(0){
     setBranchAddress({"Vertex"},true);
     makeBranch();
 }    
@@ -40,17 +40,17 @@ void DeepCMesonAnalyser::makeBranch() {
     out_tree_->Branch("track_pId", "std::vector<int>", &track_pId_);
     out_tree_->Branch("track_l", "std::vector<float>", &track_l_);
     
-    out_tree_->Branch("track_tag", "std::vector<int>", &track_costompId_);
+    out_tree_->Branch("track_costompId", "std::vector<int>", &track_costompId_);
     out_tree_->Branch("mother_pId", "std::vector<int>", &mother_pId_);
     
     out_tree_->Branch("pticle_is_d0dau", "std::vector<int>", &pticle_is_d0dau_);
     out_tree_->Branch("pticle_is_pion", "std::vector<int>", &pticle_is_pion_);
     out_tree_->Branch("pticle_is_kaon", "std::vector<int>", &pticle_is_kaon_);
 
-    out_tree_->Branch("pion_charge", "std::vector<int>", &pion_charge_);
-    out_tree_->Branch("kaon_charge", "std::vector<int>", &kaon_charge_);
-    out_tree_->Branch("pion_cand", &pion_cand_, "pion_cand/I");
-    out_tree_->Branch("kaon_cand", &kaon_cand_, "kaon_cand/I");
+    out_tree_->Branch("charge_pion_cand", "std::vector<int>", &charge_pion_cand_);
+    out_tree_->Branch("charge_kaon_cand", "std::vector<int>", &charge_kaon_cand_);
+    out_tree_->Branch("num_pion_cand", &num_pion_cand_, "num_pion_cand/I");
+    out_tree_->Branch("num_kaon_cand", &num_kaon_cand_, "num_kaon_cand/I");
    
     out_tree_->Branch("pticle_label", "std::vector<int>", &pticle_label_);
     out_tree_->Branch("jet_label", &jet_label_, "jet_label/I");
@@ -83,16 +83,16 @@ void DeepCMesonAnalyser::resetOnEachJet() {
     pticle_is_pion_.clear();
     pticle_is_kaon_.clear();
     
-    pion_charge_.clear();
-    kaon_charge_.clear();
+    charge_pion_cand_.clear();
+    charge_kaon_cand_.clear();
 
     pticle_label_.clear();    
     
     jet_label_ = -1; 
     jet_num_d0dau_ = 0;
     jet_num_track_ = 0;
-    pion_cand_ = 0;
-    kaon_cand_ = 0;
+    num_pion_cand_ = 0;
+    num_kaon_cand_ = 0;
 }
 
 void DeepCMesonAnalyser::analyse(Int_t entry) {
@@ -151,7 +151,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                     mother_pId_.push_back(mother1->PID);
 
                     // Check if particle is from D0
-                    if (abs(gen->M1) == d0_pId_ and gen->M2 == -1) {
+                    if (abs(mother1->PID) == d0_pId_ and gen->M2 == -1) {
                         pticle_is_d0dau_.push_back(1);
                         jet_num_d0dau_ = jet_num_d0dau_ + 1; 
                         // Check if particle pId is kaon or pion 
@@ -159,14 +159,14 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                             pticle_label_.push_back(1);
                             pticle_is_pion_.push_back(1);
                             pticle_is_kaon_.push_back(0);
-                            pion_charge_.push_back(track->Charge);
-                            pion_cand_ = pion_cand_+1;
+                            charge_pion_cand_.push_back(track->Charge);
+                            num_pion_cand_ = num_pion_cand_+1;
                         } else if (abs(track->PID) == kaon_pId_) {
                             pticle_label_.push_back(1);
                             pticle_is_pion_.push_back(0);
                             pticle_is_kaon_.push_back(1);
-                            kaon_charge_.push_back(track->Charge);
-                            kaon_cand_ = kaon_cand_+1;
+                            charge_kaon_cand_.push_back(track->Charge);
+                            num_kaon_cand_ = num_kaon_cand_+1;
                         } else {
                             pticle_label_.push_back(0);
                             pticle_is_pion_.push_back(0);
@@ -191,27 +191,30 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                     pticle_is_pion_.push_back(0);
                     pticle_is_kaon_.push_back(0); 
                     pticle_label_.push_back(0);
-                } //mother1
-            } //track
-        } //daughter 
+                }//mother1
+            }//track
+        }//daughter 
     
-    // Jet labelling    
-    jet_label_ = 0;
-    if (jet_num_d0dau_ >= 2) {
-        jet_label_ = 1;
-        if (pion_cand_ == 1 and kaon_cand_ ==1 ) {
-            jet_label_ = 2;
-            if (pion_charge_[0] * kaon_charge_[0] == -1) {
-                jet_label_ = 3;
+        // Jet labelling    
+        jet_label_ = 0;
+        if (jet_num_d0dau_ >= 2) {
+            jet_label_ = 1;
+            if (num_pion_cand_ == 1 and num_kaon_cand_ ==1 ) {
+                jet_label_ = 2;
+                if (charge_pion_cand_[0] * charge_kaon_cand_[0] == -1) {
+                    jet_label_ = 3;
+                }
             }
         }
-    }
-        
-    // Fill tree
-    out_tree_->Fill();
-    } //jet
+        // Particle relabelling
+        if (jet_label_ != 3){
+            replace(pticle_label_.begin(), pticle_label_.end(), 1, 0);
+        }
+        if (jet_num_track_ > 0) {
+        out_tree_->Fill();
+        }
+    }//jet
 }
-
 void DeepCMesonAnalyser::loop() {
   for (Long64_t entry=0; entry < in_tree_->GetEntries(); entry++) {
     in_tree_->GetEntry(entry);
