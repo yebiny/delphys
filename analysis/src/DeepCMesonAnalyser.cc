@@ -110,7 +110,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 
                 // Particle selection  
                 if (abs(track->Eta) > 2.4) continue;
-                if (abs(track->PT) < 20) continue;
+                if (track->PT < 20) continue;
 
                 // Save all track informations
                 jet_num_track_ = jet_num_track_ + 1;
@@ -210,7 +210,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         if (jet_label_ != 3){
             replace(pticle_label_.begin(), pticle_label_.end(), 1, 0);
         }
-        if (jet_num_track_ > 0) {
+        if (jet_num_track_ > 1) {
         out_tree_->Fill();
         }
     }//jet
