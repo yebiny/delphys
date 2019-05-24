@@ -104,14 +104,14 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         for (Int_t idx_dau = 0; idx_dau < jet -> Constituents.GetEntries(); idx_dau++) {
             TObject* daughter = jet->Constituents.At(idx_dau);
             TLorentzVector jet_p4 = jet->P4();
+            
+            // Jet selection  
+            if (abs(jet->Eta) > 2.4) continue;
+            if (jet->PT < 20) continue;
 
             // We need only track particles
             if (auto track = dynamic_cast<Track*>(daughter)) {
                 
-                // Particle selection  
-                if (abs(track->Eta) > 2.4) continue;
-                if (track->PT < 20) continue;
-
                 // Save all track informations
                 jet_num_track_ = jet_num_track_ + 1;
                 
@@ -210,6 +210,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         if (jet_label_ != 3){
             replace(pticle_label_.begin(), pticle_label_.end(), 1, 0);
         }
+        // Jet selection last 
         if (jet_num_track_ > 1) {
         out_tree_->Fill();
         }
