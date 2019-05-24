@@ -25,6 +25,7 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         std::vector<Float_t>        track_yd_;
         std::vector<Float_t>        track_zd_;
         std::vector<Float_t>        track_errd0_;
+        std::vector<Float_t>        track_mass_;
        
         std::vector<Float_t>        track_l_;
         std::vector<Int_t>          track_charge_;
