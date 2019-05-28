@@ -19,7 +19,7 @@ def main():
         print "Wrong Input"
         sys.exit()
     
-    path_name = '/xrootd/store/user/yyoun/DeepCMeson/analyser_{}/*.root'.format(data_name)
+    path_name = '/xrootd/store/user/yyoun/DeepCMeson/2-Analyser/{}/*.root'.format(data_name)
     all_paths = glob.glob(path_name)
     merge_dir = './result/{}'.format(data_name)
    
