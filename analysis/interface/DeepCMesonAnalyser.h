@@ -16,16 +16,24 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         void analyse(Int_t entry);
         void resetOnEachJet();
 
+        std::vector<TLorentzVector> track_P4_;
+        TLorentzVector jet_track_comb_;
+        std::vector<Int_t>          Idx;
+        
         std::vector<Float_t>        track_deta_;
         std::vector<Float_t>        track_dphi_;
+        
         std::vector<Float_t>        track_pt_;
+        std::vector<Float_t>        track_eta_;
+        std::vector<Float_t>        track_phi_;
+        std::vector<Float_t>        track_mass_;
+        
         std::vector<Float_t>        track_d0_;
         std::vector<Float_t>        track_dz_;
         std::vector<Float_t>        track_xd_;
         std::vector<Float_t>        track_yd_;
         std::vector<Float_t>        track_zd_;
         std::vector<Float_t>        track_errd0_;
-        std::vector<Float_t>        track_mass_;
        
         std::vector<Float_t>        track_l_;
         std::vector<Int_t>          track_charge_;
