@@ -25,7 +25,6 @@ class DeepJetSelector{
             
         // branches
         Int_t jet_label_;
-        Int_t pdgId_;
         // 
         Int_t num_bkg_random_;
         Int_t num_bkg_d0_;
