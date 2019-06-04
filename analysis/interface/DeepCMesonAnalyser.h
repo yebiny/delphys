@@ -18,7 +18,11 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
 
         TLorentzVector              pion_p4_;
         TLorentzVector              kaon_p4_;
-        TLorentzVector              d0cand_p4_;
+        TLorentzVector              track1_p4_;
+        TLorentzVector              track2_p4_;
+        
+        TLorentzVector              d0gen_p4_;
+        TLorentzVector              d0rec_p4_;
         
         std::vector<Float_t>        track_deta_;
         std::vector<Float_t>        track_dphi_;
@@ -26,7 +30,6 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         std::vector<Float_t>        track_pt_;
         std::vector<Float_t>        track_eta_;
         std::vector<Float_t>        track_phi_;
-        std::vector<Float_t>        track_mass_;
         
         std::vector<Float_t>        track_d0_;
         std::vector<Float_t>        track_dz_;
@@ -41,7 +44,7 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         std::vector<Int_t>          track_charge_;
         
         std::vector<Int_t>          mother_pId_;
-        std::vector<Float_t>        mother_;
+        std::vector<Int_t>          mother_num_;
         
         std::vector<Int_t>          pticle_is_d0dau_; 
         std::vector<Int_t>          pticle_is_pion_;
@@ -54,11 +57,23 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         std::vector<Float_t>        pion_phi_;
         std::vector<Float_t>        pion_mass_;
 
+        std::vector<Int_t>          track1_charge_;
+        std::vector<Float_t>        track1_pt_;
+        std::vector<Float_t>        track1_eta_;
+        std::vector<Float_t>        track1_phi_;
+        std::vector<Float_t>        track1_mass_;
+        
         std::vector<Int_t>          kaon_charge_;
         std::vector<Float_t>        kaon_pt_;
         std::vector<Float_t>        kaon_eta_;
         std::vector<Float_t>        kaon_phi_;
         std::vector<Float_t>        kaon_mass_;
+        
+        std::vector<Int_t>          track2_charge_;
+        std::vector<Float_t>        track2_pt_;
+        std::vector<Float_t>        track2_eta_;
+        std::vector<Float_t>        track2_phi_;
+        std::vector<Float_t>        track2_mass_;
         
         Int_t                       jet_label_;
         Int_t                       jet_count_d0dau_;
