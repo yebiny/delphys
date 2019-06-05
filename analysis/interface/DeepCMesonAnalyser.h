@@ -16,13 +16,13 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         void analyse(Int_t entry);
         void resetOnEachJet();
 
-        TLorentzVector              pion_p4_;
-        TLorentzVector              kaon_p4_;
-        TLorentzVector              track1_p4_;
-        TLorentzVector              track2_p4_;
+        TLorentzVector              pion_gen_p4_;
+        TLorentzVector              kaon_gen_p4_;
+        TLorentzVector              pion_rec_p4_;
+        TLorentzVector              kaon_rec_p4_;
         
-        TLorentzVector              d0gen_p4_;
-        TLorentzVector              d0rec_p4_;
+        TLorentzVector              d0_gen_p4_;
+        TLorentzVector              d0_rec_p4_;
         
         std::vector<Float_t>        track_deta_;
         std::vector<Float_t>        track_dphi_;
@@ -46,34 +46,13 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         std::vector<Int_t>          mother_pId_;
         std::vector<Int_t>          mother_num_;
         
-        std::vector<Int_t>          pticle_is_d0dau_; 
-        std::vector<Int_t>          pticle_is_pion_;
-        std::vector<Int_t>          pticle_is_kaon_;
-        std::vector<Int_t>          pticle_label_;
+        std::vector<Int_t>          dau_label_;
         
-        std::vector<Int_t>          pion_charge_;
-        std::vector<Float_t>        pion_pt_;
-        std::vector<Float_t>        pion_eta_;
-        std::vector<Float_t>        pion_phi_;
-        std::vector<Float_t>        pion_mass_;
-
-        std::vector<Int_t>          track1_charge_;
-        std::vector<Float_t>        track1_pt_;
-        std::vector<Float_t>        track1_eta_;
-        std::vector<Float_t>        track1_phi_;
-        std::vector<Float_t>        track1_mass_;
-        
-        std::vector<Int_t>          kaon_charge_;
-        std::vector<Float_t>        kaon_pt_;
-        std::vector<Float_t>        kaon_eta_;
-        std::vector<Float_t>        kaon_phi_;
-        std::vector<Float_t>        kaon_mass_;
-        
-        std::vector<Int_t>          track2_charge_;
-        std::vector<Float_t>        track2_pt_;
-        std::vector<Float_t>        track2_eta_;
-        std::vector<Float_t>        track2_phi_;
-        std::vector<Float_t>        track2_mass_;
+        std::vector<Int_t>          gen_charge_;
+        std::vector<Float_t>        gen_pt_;
+        std::vector<Float_t>        gen_eta_;
+        std::vector<Float_t>        gen_phi_;
+        std::vector<Float_t>        gen_mass_;
         
         Int_t                       jet_label_;
         Int_t                       jet_count_d0dau_;
@@ -81,7 +60,8 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         Int_t                       jet_count_pion_;
         Int_t                       jet_count_kaon_;
        
-        std::vector<Int_t>          Idx;
+        std::vector<Int_t>          kaon_Idx;
+        std::vector<Int_t>          pion_Idx;
        
         static const int pion_pId_ = 211, kaon_pId_ = 321, d0_pId_ = 421;
         static constexpr float pion_m_ = 0.1396, kaon_m_ = 0.4937, d0_m_ = 1.865;   
