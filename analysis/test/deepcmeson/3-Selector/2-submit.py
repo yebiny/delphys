@@ -1,9 +1,5 @@
 import os, sys, getopt
 
-data_name = 'pwg_test'
-if len(sys.argv) == 2 :
-    data_name = sys.argv[1]
-txt_name = './txtFiles/deepc_{}.txt'.format(data_name)
 
 _JDS_FMT = """executable = /cms/ldap_home/yyoun/delPhys/bin/slc6_amd64_gcc630/selectDeepJet
 universe   = vanilla
@@ -25,11 +21,19 @@ error = ./log/{data_name}/job_{suffix}.err
 queue"""
 
 def main():
-    print data_name, txt_name
+    
+    data_name = 'pwg_test'
+    if len(sys.argv) == 3 :
+        data_name = sys.argv[1]
+        ratio = int(sys.argv[2])
+    elif len(sys.argv) == 2 :
+        ratio = int(sys.argv[1])
+    
+    txt_name = './txtFiles/deepc_{}.txt'.format(data_name)
+    print data_name, txt_name, ratio
+  
     out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/yyoun/DeepCMeson/3-Selector/'+data_name
     log_dir = './log/{}'.format(data_name)
-    #You Have to Check ratio
-    ratio = 20
     
     #Make out dir 
     if not os.path.isdir(log_dir):
