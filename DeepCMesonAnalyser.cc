@@ -26,10 +26,6 @@ void DeepCMesonAnalyser::makeBranch() {
     
     resetOnEachJet();
 
-    //out_tree_->Branch("pion_P4", "TLorentzVector", &pion_p4_);
-    //out_tree_->Branch("kaon_P4", "TLorentzVector", &kaon_p4_);
-    //out_tree_->Branch("dau2_p4", "TLorentzVector", &dau2_p4_);
-    //out_tree_->Branch("dau1_p4", "TLorentzVector", &dau1_p4_);
     out_tree_->Branch("d0_gen_p4", "TLorentzVector", &d0_gen_p4_);
     out_tree_->Branch("d0_rec_p4", "TLorentzVector", &d0_rec_p4_);
     
@@ -220,37 +216,39 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         if ( (jet_count_d0dau_ >=2) and (jet_count_pion_>=1) and (jet_count_kaon_>=1) ){
             jet_label_ = 1;
             for (Int_t i=0; i<kaon_size; i++){
+                Int_t knum = kaon_Idx[i]; 
+
                 for (Int_t j=0; j<pion_size; j++){
-                    if (mother_num_[kaon_Idx[i]] != mother_num_[pion_Idx[j]] ) continue;
-                    if (mother_pId_[kaon_Idx[i]] != mother_pId_[pion_Idx[j]] ) continue;
-                    if (gen_charge_[kaon_Idx[i]] * gen_charge_[pion_Idx[j]] > 0 ) continue;
+                    Int_t pnum = pion_Idx[j]; 
+                    
+                    if (mother_num_[knum] != mother_num_[pnum]) continue;
+                    if (mother_pId_[knum] != mother_pId_[pnum]) continue;
+                    if (gen_charge_[knum]*gen_charge_[pnum] >0) continue;
                         jet_label_=2;
                         
-                        Int_t check_num = mother_num_[kaon_Idx[i]];
-                        Int_t count_num = 0;
+                        Int_t mnum = mother_num_[knum];
+                        Int_t n_mnum = 0;
                         
                         for (Int_t k=0; k<size; k++){
-                            if ((check_num == mother_num_[k]) and (abs(mother_pId_[k]) == 421)){
-                                count_num = count_num+ 1;
+                            if ((mnum == mother_num_[k]) and (abs(mother_pId_[k]) == 421)){
+                                n_mnum = n_mnum+ 1;
                             }
                         }
 
-                        if ( count_num == 2 ){
+                        if ( n_mnum == 2 ){
                             jet_label_=3;
-                                
-                            kaon_rec_p4_.SetPtEtaPhiM(track_pt_[kaon_Idx[i]], track_eta_[kaon_Idx[i]], track_phi_[kaon_Idx[i]], gen_mass_[kaon_Idx[i]]);
-                            pion_rec_p4_.SetPtEtaPhiM(track_pt_[pion_Idx[j]], track_eta_[pion_Idx[j]], track_phi_[pion_Idx[j]], gen_mass_[pion_Idx[j]]);
+
+                            kaon_rec_p4_.SetPtEtaPhiM(track_pt_[knum], track_eta_[knum], track_phi_[knum], gen_mass_[knum]);
+                            pion_rec_p4_.SetPtEtaPhiM(track_pt_[pnum], track_eta_[pnum], track_phi_[pnum], gen_mass_[pnum]);
                             d0_rec_p4_ = kaon_rec_p4_+pion_rec_p4_;
-                            kaon_gen_p4_.SetPtEtaPhiM(gen_pt_[kaon_Idx[i]], gen_eta_[kaon_Idx[i]], gen_phi_[kaon_Idx[i]], gen_mass_[kaon_Idx[i]]);
-                            pion_gen_p4_.SetPtEtaPhiM(gen_pt_[pion_Idx[j]], gen_eta_[pion_Idx[j]], gen_phi_[pion_Idx[j]], gen_mass_[pion_Idx[j]]);
+                            kaon_gen_p4_.SetPtEtaPhiM(gen_pt_[knum], gen_eta_[knum], gen_phi_[knum], gen_mass_[knum]);
+                            pion_gen_p4_.SetPtEtaPhiM(gen_pt_[pnum], gen_eta_[pnum], gen_phi_[pnum], gen_mass_[pnum]);
                             d0_gen_p4_ = kaon_gen_p4_+pion_gen_p4_;
 
-                            if ( abs(d0_gen_p4_.M() - d0_m_) < 0.05 ) {
-                            //std::cout << "-----------------" << std::endl;
-                            //std::cout << mother_pId_[kaon_Idx[i]]<<" , " <<mother_pId_[pion_Idx[j]]<< std::endl;
-                            //std::cout << d0_gen_p4_.M()<< std::endl;
-                                jet_label_=4; 
-                            }
+                            if ( abs(d0_gen_p4_.M() - d0_m_) > 0.05 ) {
+                                d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
+                                d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
+                            }else {jet_label_=4;} 
 
                         }//label 3
                 }//label 2 
