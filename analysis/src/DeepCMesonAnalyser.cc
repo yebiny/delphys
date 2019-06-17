@@ -246,6 +246,16 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
 
                             if ( abs(d0_gen_p4_.M() - d0_m_) < 0.05 ) {
                                 jet_label_=4;
+                                
+                                //Particle relabelling for reconstruction
+                                if (pnum <5 and knum <5 ){
+                                    jet_label_ =5;
+                                    replace(dau_label_.begin(), dau_label_.end(), 1, 0);
+                                    replace(dau_label_.begin(), dau_label_.end(), 2, 0);
+                                    dau_label_[pnum]=1;
+                                    dau_label_[knum]=1;
+                                }
+
                             }else {
                                 d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
                                 d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
@@ -255,18 +265,17 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
             }//label 2: kaon  
         }//label 1
         
-        //Particle relabelling
-        if (jet_label_ != 4) {
-            replace(dau_label_.begin(), dau_label_.end(), 1, 0);
-            replace(dau_label_.begin(), dau_label_.end(), 2, 0);
-        }
+        //if (jet_label_ != 4) {
+        //    replace(dau_label_.begin(), dau_label_.end(), 1, 0);
+        //    replace(dau_label_.begin(), dau_label_.end(), 2, 0);
+        //}
         
         // Fill only jet which has least 2 track particles
         if (jet_count_track_ < 2) continue;
         out_tree_->Fill();
 
         //CHECK     
-        if (jet_label_ >= 3){
+        if (jet_label_ > 3){
             std::cout << "----------------------" << std::endl;
             std::cout << "Jet tag: "<< jet_label_ << std::endl;
             std::cout << "----------------------" << std::endl;
