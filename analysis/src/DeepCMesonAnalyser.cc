@@ -207,6 +207,12 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 pion_Idx.push_back(i);
             }
         }
+        
+        // reset all dau label.
+        replace(dau_label_.begin(), dau_label_.end(), 1, 0);
+        replace(dau_label_.begin(), dau_label_.end(), 2, 0);
+        replace(dau_label_.begin(), dau_label_.end(), -1, 0);
+        
         Int_t kaon_size = kaon_Idx.size(); 
         Int_t pion_size = pion_Idx.size(); 
         
@@ -233,7 +239,7 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                                 n_mnum = n_mnum+ 1;
                             }
                         }
-
+                        
                         if ( n_mnum == 2 ){
                             jet_label_=3;
 
@@ -243,17 +249,16 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                             kaon_gen_p4_.SetPtEtaPhiM(gen_pt_[knum],gen_eta_[knum],gen_phi_[knum],gen_mass_[knum]);
                             pion_gen_p4_.SetPtEtaPhiM(gen_pt_[pnum],gen_eta_[pnum],gen_phi_[pnum],gen_mass_[pnum]);
                             d0_gen_p4_ = kaon_gen_p4_+pion_gen_p4_;
-
+                            
+                            // Signal//
                             if ( abs(d0_gen_p4_.M() - d0_m_) < 0.05 ) {
                                 jet_label_=4;
+                                dau_label_[pnum]=1;
+                                dau_label_[knum]=1;
                                 
                                 //Particle relabelling for reconstruction
                                 if (pnum <5 and knum <5 ){
                                     jet_label_ =5;
-                                    replace(dau_label_.begin(), dau_label_.end(), 1, 0);
-                                    replace(dau_label_.begin(), dau_label_.end(), 2, 0);
-                                    dau_label_[pnum]=1;
-                                    dau_label_[knum]=1;
                                 }
 
                             }else {
@@ -264,11 +269,6 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                 }//label 2: pion
             }//label 2: kaon  
         }//label 1
-        
-        //if (jet_label_ != 4) {
-        //    replace(dau_label_.begin(), dau_label_.end(), 1, 0);
-        //    replace(dau_label_.begin(), dau_label_.end(), 2, 0);
-        //}
         
         // Fill only jet which has least 2 track particles
         if (jet_count_track_ < 2) continue;

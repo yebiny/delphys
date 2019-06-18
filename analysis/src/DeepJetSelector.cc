@@ -43,19 +43,22 @@ void DeepJetSelector::setBranchAddress(){
 }
 
 void DeepJetSelector::analyse(Int_t entry, Int_t ratio){
-
-    if (jet_label_ == 4){ 
+    if (jet_label_ == 5){
         out_tree_->Fill();
-        num_sig_d0_++;
-            if (num_sig_d0_ % 10 == 0)
-            std::cout << "!!SIG!!" << num_sig_d0_ << "and" << "!!BKG!!" << num_bkg_d0_ << "->" << num_bkg_random_ << std::endl;
-    }else{
-        num_bkg_d0_++;
-        if (num_bkg_d0_ % ratio == 0){
-            num_bkg_random_++;
-            out_tree_->Fill();
-        }
-    }
+    }    
+    
+   // if (jet_label_ >= 4){ 
+   //     out_tree_->Fill();
+   //     num_sig_d0_++;
+   //         if (num_sig_d0_ % 10 == 0)
+   //         std::cout << "!!SIG!!" << num_sig_d0_ << "and" << "!!BKG!!" << num_bkg_d0_ << "->" << num_bkg_random_ << std::endl;
+   // }else{
+   //     num_bkg_d0_++;
+   //     if (num_bkg_d0_ % ratio == 0){
+   //         num_bkg_random_++;
+   //         out_tree_->Fill();
+   //     }
+   // }
 }
 
 void DeepJetSelector::loop(Int_t ratio){

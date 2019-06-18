@@ -4,7 +4,7 @@
    
            $ analyseDeepCMeson [ Input File ] [ Out File ]       
               
-                Input Example : ../2-Analyser/result/
+                Input Example : ../1-Generation/
 --------------------------------------------------------------------
 --------------------------------------------------------------------
                          1. Make TXT File 
