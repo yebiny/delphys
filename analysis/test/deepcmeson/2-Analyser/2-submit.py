@@ -31,6 +31,7 @@ def main():
     print data_name, txt_name
     out_dir = 'root://cms-xrdr.private.lo:2094///xrd/store/user/yyoun/DeepCMeson/2-Analyser/'+data_name
     log_dir = './log/{}'.format(data_name)
+    
     #Make out dir 
     if not os.path.isdir(log_dir):
         print 'Make log directory'
