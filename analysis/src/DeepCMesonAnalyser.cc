@@ -275,14 +275,14 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
         out_tree_->Fill();
 
         //CHECK     
-        if (jet_label_ > 3){
-            std::cout << "----------------------" << std::endl;
-            std::cout << "Jet tag: "<< jet_label_ << std::endl;
-            std::cout << "----------------------" << std::endl;
-            for ( Int_t i=0; i < size; i++ ) {
-                std::cout << dau_label_[i]<<"|"<< mother_num_[i]<<"|"<< mother_pId_[i] <<"|"<< gen_charge_[i]<<std::endl;
-            }
-        }    
+        //if (jet_label_ > 3){
+        //    std::cout << "----------------------" << std::endl;
+        //    std::cout << "Jet tag: "<< jet_label_ << std::endl;
+        //    std::cout << "----------------------" << std::endl;
+        //    for ( Int_t i=0; i < size; i++ ) {
+        //        std::cout << dau_label_[i]<<"|"<< mother_num_[i]<<"|"<< mother_pId_[i] <<"|"<< gen_charge_[i]<<std::endl;
+        //    }
+        //}    
     }//jet
 }
 
