@@ -43,7 +43,7 @@ void DeepJetSelector::setBranchAddress(){
 }
 
 void DeepJetSelector::analyse(Int_t entry, Int_t ratio){
-    //if (jet_label_ == 5){
+    //if (jet_label_ >= 4){
     //    out_tree_->Fill();
     //}    
     

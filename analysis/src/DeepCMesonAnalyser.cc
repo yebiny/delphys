@@ -261,10 +261,10 @@ void DeepCMesonAnalyser::analyse(Int_t entry) {
                                     jet_label_ =5;
                                 }
 
-                            }else {
-                                d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
-                                d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
-                            } 
+                            }//else {
+                             //   d0_gen_p4_.SetPtEtaPhiM(0,0,0,0);
+                             //   d0_rec_p4_.SetPtEtaPhiM(0,0,0,0);
+                             //   } 
                         }//label 3
                 }//label 2: pion
             }//label 2: kaon  
