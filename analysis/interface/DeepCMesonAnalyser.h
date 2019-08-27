@@ -23,6 +23,8 @@ class DeepCMesonAnalyser : private BaseAnalyser  {
         
         TLorentzVector              d0_gen_p4_;
         TLorentzVector              d0_rec_p4_;
+        TLorentzVector              d0_gen_;
+        TLorentzVector              d0_rec_;
         
         std::vector<Float_t>        track_deta_;
         std::vector<Float_t>        track_dphi_;
